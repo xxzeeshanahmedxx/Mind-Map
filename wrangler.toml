@@ -2,15 +2,7 @@ name = "mind-map"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-06-25"
 
-# D1 setup:
-# 1. Create a D1 database named mind-map-db in Cloudflare.
-# 2. Bind it to this Pages project with binding name DB.
-# 3. Run schema.sql once against that database.
-#
-# If you deploy with Wrangler instead of the Cloudflare dashboard, uncomment
-# and fill in your real database_id below.
-#
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "mind-map-db"
-# database_id = "YOUR_REAL_D1_DATABASE_ID"
+[[d1_databases]]
+binding = "DB"
+database_name = "mind-map-db"
+database_id = "49ddfb1b-a6ba-4317-a66c-062ba0d3b83f"
