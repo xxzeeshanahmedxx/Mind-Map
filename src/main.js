@@ -37,7 +37,7 @@ let state = {
   pan: { x: 140, y: 70 },
   zoom: 1,
   canvas: {
-    color: '#f6f5f4',
+    color: '#202020',
     grid: true,
   },
   linkDefaults: {
@@ -49,7 +49,7 @@ let state = {
   },
   outline: '',
   search: '',
-  theme: 'light',
+  theme: 'dark',
   featureIdeaSearch: '',
   featureIdeaCategory: 'All',
   activeFeatureIdeas: [],
