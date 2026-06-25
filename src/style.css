@@ -144,19 +144,21 @@
     bottom: 86px;
     left: 16px;
     z-index: 80;
-    width: min(720px, calc(100vw - 32px));
+    width: fit-content;
+    min-width: 260px;
+    max-width: calc(100vw - 32px);
     max-height: min(72vh, 720px);
     overflow: auto;
     border: 1px solid var(--notion-hairline);
     border-radius: 16px;
     background: var(--notion-surface-raised);
-    padding: 20px;
+    padding: 16px;
     color: var(--notion-ink);
     box-shadow: var(--shadow-elevated);
   }
 
-  .task-panel.narrow { width: min(420px, calc(100vw - 32px)); }
-  .task-panel.medium { width: min(560px, calc(100vw - 32px)); }
+  .task-panel.narrow { min-width: 280px; width: fit-content; }
+  .task-panel.medium { min-width: 420px; width: fit-content; }
   .task-panel.right { left: auto; right: 16px; }
 
   .panel-title { margin-bottom: 12px; color: var(--notion-ink-secondary); font-size: 12px; font-weight: 600; line-height: 1.33; letter-spacing: 0.125px; }
@@ -295,4 +297,13 @@
     transform: translateX(-50%) translateY(0);
   }
   .top-nav .tool-btn::after { bottom: auto; top: calc(100% + 8px); }
+}
+
+
+@layer components {
+  #quickSave.tool-btn-primary { min-width: 36px; width: 36px; padding-inline: 0; }
+  .zoom-cluster { padding: 3px; border: 1px solid var(--notion-hairline); border-radius: 9999px; background: var(--notion-surface); }
+  .task-panel .grid { min-width: max-content; }
+  #nodesPanel, #outlinePanel { width: min(520px, calc(100vw - 32px)); }
+  #formatPanel { width: min(560px, calc(100vw - 32px)); }
 }

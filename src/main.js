@@ -123,8 +123,8 @@ app.innerHTML = `
       <button id="deleteNode" class="tool-btn">${icon('trash')}<span>Delete</span></button>
       <button id="undoBtn" class="tool-btn">${icon('undo')}<span>Undo</span></button>
       <button id="redoBtn" class="tool-btn">${icon('redo')}<span>Redo</span></button>
-      <button id="fitBtn" class="tool-btn">${icon('fit')}<span>Fit</span></button>
       <div class="ml-auto flex items-center gap-2">
+        <button id="quickSave" class="tool-btn tool-btn-primary">${icon('save')}<span>Save</span></button>
         <span id="status" class="status-pill">Ready</span>
         <span id="zoomLabel" class="zoom-pill">100%</span>
       </div>
@@ -143,20 +143,20 @@ app.innerHTML = `
 
     <footer class="taskbar no-print">
       <div class="taskbar-group">
-        <button class="tool-btn task-toggle" data-panel="projectPanel">${icon('folder')}<span>Project</span></button>
         <button class="tool-btn task-toggle" data-panel="canvasPanel">${icon('canvas')}<span>Canvas</span></button>
         <button class="tool-btn task-toggle" data-panel="nodesPanel">${icon('nodes')}<span>Nodes</span></button>
         <button class="tool-btn task-toggle" data-panel="formatPanel">${icon('format')}<span>Format</span></button>
         <button class="tool-btn task-toggle" data-panel="linesPanel">${icon('lines')}<span>Lines</span></button>
         <button class="tool-btn task-toggle" data-panel="outlinePanel">${icon('outline')}<span>Outline</span></button>
       </div>
-      <div class="taskbar-divider"></div>
-      <div class="taskbar-group">
+      <div class="ml-auto taskbar-group zoom-cluster">
         <button id="zoomOut" class="tool-btn icon-only" title="Zoom out">${icon('minus')}</button>
         <button id="zoomReset" class="tool-btn icon-only" title="Reset zoom">${icon('fit')}</button>
         <button id="zoomIn" class="tool-btn icon-only" title="Zoom in">${icon('add')}</button>
+        <button id="fitBtn" class="tool-btn icon-only" title="Fit map">${icon('fit')}</button>
       </div>
-      <div class="ml-auto taskbar-group">
+      <div class="taskbar-divider"></div>
+      <div class="taskbar-group">
         <button id="themeToggle" class="tool-btn">${icon('moon')}<span>Dark</span></button>
         <button class="tool-btn task-toggle" data-panel="shortcutsPanel">${icon('help')}<span>Shortcuts</span></button>
       </div>
@@ -840,6 +840,13 @@ function createFromOutline() {
   status('Outline converted')
 }
 
+function saveCurrentMap() {
+  state.outline = $('#outline')?.value || state.outline
+  state.mapTitle = $('#mapTitle')?.value || state.mapTitle
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  status('Saved locally')
+}
+
 function bindEvents() {
   $$('.task-toggle').forEach((button) => {
     button.addEventListener('click', (event) => {
@@ -928,11 +935,8 @@ function bindEvents() {
     status('Redo')
   })
 
-  $('#saveLocal').addEventListener('click', () => {
-    state.outline = $('#outline').value
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-    status('Saved locally')
-  })
+  $('#quickSave').addEventListener('click', saveCurrentMap)
+  $('#saveLocal')?.addEventListener('click', saveCurrentMap)
   $('#loadLocal').addEventListener('click', () => {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (!saved) return alert('No saved map found in this browser yet.')
