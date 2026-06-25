@@ -97,7 +97,11 @@ const ICONS = {
   search: '<path d="m21 21-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"/>',
   eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>',
   check: '<path d="m5 12 4 4L19 6"/>',
+  bold: '<path d="M7 5h6a3 3 0 0 1 0 6H7zM7 11h7a4 4 0 0 1 0 8H7z"/>',
+  italic: '<path d="M10 5h8M6 19h8M14 5l-4 14"/>',
+  underline: '<path d="M7 5v6a5 5 0 0 0 10 0V5M5 21h14"/>',
 }
+
 
 function icon(name) {
   return `<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ICONS.help}</svg>`
@@ -109,10 +113,6 @@ app.innerHTML = `
     <header class="top-nav no-print">
       <div class="brand-block">
         <div class="brand-mark">✦</div>
-        <div>
-          <h1 class="brand-title">Mind Map Canvas</h1>
-          <p class="brand-subtitle">Notion-style private workspace</p>
-        </div>
       </div>
       <input id="mapTitle" class="map-title-input" value="My Mind Map" aria-label="Map title" />
       <span id="lastEdited" class="last-edited">Edited just now</span>
@@ -153,7 +153,7 @@ app.innerHTML = `
       <div class="taskbar-divider"></div>
       <div class="taskbar-group">
         <button id="zoomOut" class="tool-btn icon-only" title="Zoom out">${icon('minus')}</button>
-        <button id="zoomReset" class="tool-btn">100%</button>
+        <button id="zoomReset" class="tool-btn icon-only" title="Reset zoom">${icon('fit')}</button>
         <button id="zoomIn" class="tool-btn icon-only" title="Zoom in">${icon('add')}</button>
       </div>
       <div class="ml-auto taskbar-group">
@@ -212,9 +212,9 @@ app.innerHTML = `
           <label><span class="form-label">Size</span><input id="fontSize" type="number" min="8" max="96" class="form-input" /></label>
         </div>
         <div class="grid grid-cols-3 gap-2">
-          <button id="boldBtn" class="tool-btn">Bold</button>
-          <button id="italicBtn" class="tool-btn">Italic</button>
-          <button id="underlineBtn" class="tool-btn">Underline</button>
+          <button id="boldBtn" class="tool-btn icon-only" title="Bold">${icon('bold')}</button>
+          <button id="italicBtn" class="tool-btn icon-only" title="Italic">${icon('italic')}</button>
+          <button id="underlineBtn" class="tool-btn icon-only" title="Underline">${icon('underline')}</button>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <label><span class="form-label">Align</span><select id="align" class="form-input"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></label>
@@ -240,13 +240,13 @@ app.innerHTML = `
         <label><span class="form-label">Type</span><select id="lineType" class="form-input"><option value="curve">Curved</option><option value="straight">Straight</option><option value="elbow">Elbow</option></select></label>
         <label class="flex items-end gap-2 pb-1"><input id="lineDash" type="checkbox" class="h-5 w-5 accent-[#0075de]" /> <span class="form-label">Dashed</span></label>
       </div>
-      <button id="applyLineAll" class="tool-btn mt-3 w-full">Apply to All Lines</button>
+      <button id="applyLineAll" class="tool-btn mt-3 w-full" title="Apply to all lines">${icon('check')}<span>Apply to All Lines</span></button>
     </section>
 
     <section id="outlinePanel" class="task-panel medium hidden no-print">
       <h2 class="panel-title">Outline to Mind Map</h2>
       <textarea id="outline" class="textarea-input thin-scroll min-h-40" placeholder="Main topic\nFirst point\nSecond point\nExample\nConclusion"></textarea>
-      <button id="outlineToNodes" class="tool-btn tool-btn-primary mt-3 w-full">Create From Outline</button>
+      <button id="outlineToNodes" class="tool-btn tool-btn-primary mt-3 w-full" title="Create from outline">${icon('nodes')}<span>Create From Outline</span></button>
       <p class="muted-copy mt-2">First line becomes the center. Remaining lines become connected ideas.</p>
     </section>
 
@@ -263,6 +263,17 @@ app.innerHTML = `
     </section>
   </div>
 `
+
+function setupButtonTooltips() {
+  $$('.tool-btn').forEach((button) => {
+    const label = button.getAttribute('title') || button.textContent.trim() || button.getAttribute('aria-label') || 'Action'
+    button.dataset.tip = label
+    button.setAttribute('aria-label', label)
+    if (!button.getAttribute('title')) button.setAttribute('title', label)
+  })
+}
+
+setupButtonTooltips()
 
 const els = {
   viewport: $('#viewport'),
@@ -298,7 +309,11 @@ function applyTheme() {
   document.documentElement.classList.toggle('compact-mode', Boolean(state.ui?.compact))
   const btn = $('#themeToggle')
   if (btn) {
+    const label = state.theme === 'dark' ? 'Light mode' : 'Dark mode'
     btn.innerHTML = `${icon(state.theme === 'dark' ? 'sun' : 'moon')}<span>${state.theme === 'dark' ? 'Light' : 'Dark'}</span>`
+    btn.dataset.tip = label
+    btn.setAttribute('aria-label', label)
+    btn.setAttribute('title', label)
     btn.classList.toggle('is-active', state.theme === 'dark')
   }
 }
