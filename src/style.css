@@ -307,3 +307,45 @@
   #nodesPanel, #outlinePanel { width: min(520px, calc(100vw - 32px)); }
   #formatPanel { width: min(560px, calc(100vw - 32px)); }
 }
+
+@layer components {
+  .node-card {
+    align-items: stretch;
+    justify-content: stretch;
+    resize: both;
+    min-width: 120px;
+    min-height: 72px;
+  }
+  .node-inner {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: 4px;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+  }
+  .node-text-box {
+    min-height: 1.2em;
+    border-radius: 4px;
+    padding: 1px 2px;
+    outline: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre-wrap;
+    cursor: text;
+  }
+  .node-text-box:empty::before {
+    content: attr(data-placeholder);
+    color: var(--notion-ink-faint);
+    opacity: .55;
+  }
+  .node-text-box[contenteditable="true"] {
+    background: color-mix(in srgb, var(--notion-primary) 10%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--notion-primary) 45%, transparent);
+    overflow: auto;
+    text-overflow: clip;
+  }
+  .node-text-box-1 { letter-spacing: -0.08px; }
+  .node-text-box-2 { opacity: .92; }
+  .node-text-box-3 { opacity: .78; }
+}

@@ -7,8 +7,8 @@ const WORLD_HEIGHT = 2800
 const defaultNode = {
   x: 520,
   y: 360,
-  w: 150,
-  h: 52,
+  w: 190,
+  h: 104,
   text: 'New idea',
   fill: '#ffffff',
   color: '#000000',
@@ -296,11 +296,33 @@ function status(message) {
   status.timer = window.setTimeout(() => (els.status.textContent = 'Ready'), 1800)
 }
 
+
+function defaultTextBoxes(text = 'New idea') {
+  const dark = state.theme === 'dark'
+  return [
+    { text, size: 15, weight: 800, italic: false, underline: false, color: dark ? '#f1f1ef' : '#000000', align: 'left', placeholder: 'Title' },
+    { text: '', size: 12, weight: 500, italic: false, underline: false, color: dark ? '#c9c7c3' : '#615d59', align: 'left', placeholder: 'Detail' },
+    { text: '', size: 11, weight: 400, italic: true, underline: false, color: dark ? '#8f8d89' : '#a39e98', align: 'left', placeholder: 'Note' },
+  ]
+}
+
+function ensureNodeTextBoxes(node) {
+  if (!Array.isArray(node.boxes)) {
+    node.boxes = defaultTextBoxes(node.text || 'Idea')
+  }
+  while (node.boxes.length < 3) {
+    node.boxes.push(defaultTextBoxes('')[node.boxes.length])
+  }
+  node.boxes = node.boxes.slice(0, 3)
+  node.text = node.boxes[0]?.text || node.text || 'Idea'
+  return node.boxes
+}
+
 function getNodeDefaults() {
   if (state.theme === 'dark') {
-    return { ...clone(defaultNode), fill: '#2f2f2f', color: '#f1f1ef', border: '#474747' }
+    return { ...clone(defaultNode), fill: '#2f2f2f', color: '#f1f1ef', border: '#474747', boxes: defaultTextBoxes(defaultNode.text) }
   }
-  return clone(defaultNode)
+  return { ...clone(defaultNode), boxes: defaultTextBoxes(defaultNode.text) }
 }
 
 function applyTheme() {
@@ -496,6 +518,7 @@ function drawNodes() {
   const fragment = document.createDocumentFragment()
 
   state.nodes.forEach((node) => {
+    ensureNodeTextBoxes(node)
     const div = document.createElement('div')
     div.className = `node-card ${node.id === state.selectedId ? 'selected' : ''}`
     div.dataset.id = node.id
@@ -520,22 +543,49 @@ function drawNodes() {
 
     const inner = document.createElement('div')
     inner.className = 'node-inner'
-    inner.textContent = node.text
-    div.appendChild(inner)
 
+    node.boxes.forEach((box, index) => {
+      const boxEl = document.createElement('div')
+      boxEl.className = `node-text-box node-text-box-${index + 1}`
+      boxEl.dataset.boxIndex = index
+      boxEl.dataset.placeholder = box.placeholder || ['Title', 'Detail', 'Note'][index]
+      boxEl.textContent = box.text || ''
+      boxEl.style.fontSize = `${box.size || node.size}px`
+      boxEl.style.fontWeight = box.weight || (index === 0 ? 800 : 400)
+      boxEl.style.fontStyle = box.italic ? 'italic' : 'normal'
+      boxEl.style.textDecoration = box.underline ? 'underline' : 'none'
+      boxEl.style.color = box.color || node.color
+      boxEl.style.textAlign = box.align || node.align
+      boxEl.addEventListener('click', (event) => {
+        event.stopPropagation()
+        if (suppressNextNodeClick) return
+        if (state.connectMode) {
+          handleConnectClick(node.id)
+          return
+        }
+        state.selectedId = node.id
+        state.selectedLinkId = null
+        $$('.node-card').forEach((card) => card.classList.toggle('selected', card.dataset.id === node.id))
+        syncPanels()
+        startInlineEdit(div, boxEl, node, index)
+      })
+      inner.appendChild(boxEl)
+    })
+
+    div.appendChild(inner)
     div.addEventListener('mousedown', startNodeDrag)
-    div.addEventListener('click', (event) => {
-      event.stopPropagation()
-      if (suppressNextNodeClick) return
-      if (state.connectMode) {
-        handleConnectClick(node.id)
-        return
+    div.addEventListener('mouseup', () => {
+      const w = Math.round(div.offsetWidth)
+      const h = Math.round(div.offsetHeight)
+      if (w !== node.w || h !== node.h) {
+        snapshot()
+        node.w = w
+        node.h = h
+        drawLinks()
+        renderMiniMap()
+        syncPanels()
+        touchEdited()
       }
-      state.selectedId = node.id
-      state.selectedLinkId = null
-      $$('.node-card').forEach((card) => card.classList.toggle('selected', card.dataset.id === node.id))
-      syncPanels()
-      startInlineEdit(div, inner, node)
     })
     fragment.appendChild(div)
   })
@@ -610,19 +660,23 @@ function escapeHtml(text) {
   return text.replace(/[&<>"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]))
 }
 
-function startInlineEdit(card, inner, node) {
+function startInlineEdit(card, inner, node, boxIndex = 0) {
   snapshot()
+  ensureNodeTextBoxes(node)
   card.classList.add('editing')
   inner.contentEditable = 'true'
   inner.focus()
   document.getSelection().selectAllChildren(inner)
 
   const finish = () => {
-    node.text = inner.innerText.trim() || 'Idea'
+    const text = inner.innerText.trim()
+    node.boxes[boxIndex].text = text
+    if (boxIndex === 0) node.text = text || 'Idea'
     inner.contentEditable = 'false'
     card.classList.remove('editing')
     render()
     syncPanels()
+    touchEdited()
   }
 
   inner.addEventListener('blur', finish, { once: true })
@@ -636,6 +690,8 @@ function startInlineEdit(card, inner, node) {
 
 function startNodeDrag(event) {
   if (event.target.isContentEditable) return
+  const rect = event.currentTarget.getBoundingClientRect()
+  if (event.clientX > rect.right - 18 && event.clientY > rect.bottom - 18) return
   event.stopPropagation()
   const node = state.nodes.find((item) => item.id === event.currentTarget.dataset.id)
   if (!node) return
@@ -704,6 +760,10 @@ function updateNode(key, value) {
   if (!node) return
   snapshot()
   node[key] = value
+  if (key === 'text') {
+    ensureNodeTextBoxes(node)
+    node.boxes[0].text = value
+  }
   render()
   touchEdited()
   syncPanels()
@@ -731,7 +791,8 @@ function syncPanels() {
   els.nodePanel.classList.toggle('hidden', !node)
   if (!node) return
 
-  $('#nodeText').value = node.text
+  ensureNodeTextBoxes(node)
+  $('#nodeText').value = node.boxes[0]?.text || node.text
   $('#textColor').value = node.color
   $('#fillColor').value = node.fill
   $('#borderColor').value = node.border
@@ -849,7 +910,7 @@ function createFromOutline() {
   state.nodes = []
   state.links = []
 
-  const root = { ...getNodeDefaults(), id: uid('node'), x: 1850, y: 1280, w: 210, h: 72, text: lines[0], fill: state.theme === 'dark' ? '#202020' : '#f6f5f4', border: state.theme === 'dark' ? '#474747' : '#e6e6e6', size: 19, bold: true }
+  const root = { ...getNodeDefaults(), id: uid('node'), x: 1850, y: 1280, w: 230, h: 112, text: lines[0], fill: state.theme === 'dark' ? '#202020' : '#f6f5f4', border: state.theme === 'dark' ? '#474747' : '#e6e6e6', size: 19, bold: true }
   state.nodes.push(root)
 
   const count = lines.length - 1
@@ -1173,7 +1234,7 @@ function zoomBy(multiplier) {
 }
 
 function seedDemo() {
-  const main = { ...getNodeDefaults(), id: uid('node'), x: 1850, y: 1280, w: 210, h: 72, text: 'Explain Your Topic', fill: state.theme === 'dark' ? '#202020' : '#f6f5f4', border: state.theme === 'dark' ? '#474747' : '#e6e6e6', size: 19, bold: true }
+  const main = { ...getNodeDefaults(), id: uid('node'), x: 1850, y: 1280, w: 230, h: 112, text: 'Explain Your Topic', fill: state.theme === 'dark' ? '#202020' : '#f6f5f4', border: state.theme === 'dark' ? '#474747' : '#e6e6e6', size: 19, bold: true }
   const n1 = { ...getNodeDefaults(), id: uid('node'), x: 2190, y: 1110, text: 'Definition' }
   const n2 = { ...getNodeDefaults(), id: uid('node'), x: 2195, y: 1430, text: 'Examples' }
   const n3 = { ...getNodeDefaults(), id: uid('node'), x: 1530, y: 1110, text: 'Why it matters' }
