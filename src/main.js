@@ -53,82 +53,10 @@ let state = {
   featureIdeaSearch: '',
   featureIdeaCategory: 'All',
   activeFeatureIdeas: [],
+  mapTitle: 'My Mind Map',
+  lastEdited: 'Just now',
+  ui: { miniMap: true, dotGrid: false, focus: false, presentation: false, compact: false },
 }
-
-const FEATURE_BLUEPRINTS = [
-  {
-    category: 'Canvas and workspace',
-    start: 1,
-    qualities: ['Full-screen', 'Centered', 'Infinite-feel', 'Soft', 'Plain', 'Generous', 'Fixed', 'Subtle', 'Collapsible', 'Clean'],
-    topics: ['workspace', 'root node', 'canvas background', 'grid option', 'empty margin', 'top bar', 'status bar', 'panel space', 'edge fade', 'map title area'],
-  },
-  {
-    category: 'Node appearance',
-    start: 101,
-    qualities: ['Rounded', 'Pill-shaped', 'Soft-corner', 'Shadowed', 'Bordered', 'Borderless', 'Larger root', 'Compact child', 'Roomy', 'Resizable'],
-    topics: ['node style', 'node option', 'square node', 'selected node state', 'node border', 'flat node preset', 'root node preset', 'child node preset', 'node padding', 'node handle'],
-  },
-  {
-    category: 'Text and content',
-    start: 201,
-    qualities: ['Crisp', 'Readable', 'Scalable', 'Bold', 'Medium-weight', 'Regular-weight', 'Markdown-lite', 'Plain-text', 'Multiline', 'Copy-friendly'],
-    topics: ['sans-serif text', 'base font size', 'text scale', 'root title', 'child title', 'body text', 'styling option', 'default mode', 'node content', 'selection behavior'],
-  },
-  {
-    category: 'Lines and relationships',
-    start: 301,
-    qualities: ['Curved', 'Straight', 'Elbow', 'Thicker root', 'Thinner child', 'Soft-color', 'Monochrome', 'Arrow-free', 'Label-ready', 'Hover-highlighted'],
-    topics: ['connector line', 'connector option', 'branch option', 'root connector', 'child connector', 'relationship color', 'line style', 'default direction', 'relationship label', 'path state'],
-  },
-  {
-    category: 'Navigation and viewport',
-    start: 401,
-    qualities: ['Wheel', 'Pinch', 'Button-based', 'Fit-to-map', 'Fit-to-selection', 'Center-root', 'Percentage', 'Cursor-focused', 'Space-drag', 'Mini-map'],
-    topics: ['zoom control', 'gesture zoom', 'zoom buttons', 'view action', 'selection view', 'root navigation', 'zoom display', 'zoom behavior', 'pan shortcut', 'navigator'],
-  },
-  {
-    category: 'Selection and editing',
-    start: 501,
-    qualities: ['Single-click', 'Shift-click', 'Drag-box', 'Lasso', 'Clear-outline', 'Count-badge', 'Contextual', 'Multi-select', 'Background-click', 'Escape-key'],
-    topics: ['selection', 'multi-select', 'selection region', 'selection option', 'selection state', 'selection feedback', 'selected-node toolbar', 'bulk toolbar', 'deselect action', 'cancel action'],
-  },
-  {
-    category: 'Menus and toolbars',
-    start: 601,
-    qualities: ['Slim', 'Icon-labeled', 'Core-only', 'Overflow', 'Quick-add', 'Searchable', 'Undoable', 'Docked', 'Theme-aware', 'Minimal'],
-    topics: ['toolbar', 'button style', 'default actions', 'extras menu', 'add menu', 'search UI', 'history controls', 'navigation cluster', 'theme toggle', 'settings surface'],
-  },
-  {
-    category: 'Visual style and theme',
-    start: 701,
-    qualities: ['Cool', 'Modern-flat', 'Soft-shadow', 'Muted-color', 'Single-accent', 'Custom-accent', 'Polished-dark', 'Polished-light', 'System-aware', 'High-contrast'],
-    topics: ['aesthetic', 'design base', 'elevation', 'color system', 'primary color', 'accent option', 'dark mode', 'light mode', 'theme mode', 'accessibility theme'],
-  },
-  {
-    category: 'Feedback and accessibility',
-    start: 801,
-    qualities: ['Visible', 'Focused', 'Dragged', 'Drop-target', 'Autosave', 'Saved', 'Offline', 'Retryable', 'Plain-language', 'Brief-success'],
-    topics: ['hover feedback', 'focus feedback', 'drag feedback', 'drop feedback', 'status text', 'save checkmark', 'connection badge', 'failure action', 'error message', 'success toast'],
-  },
-  {
-    category: 'Personal and responsive',
-    start: 901,
-    qualities: ['Welcome', 'Personal', 'Life-template', 'Work-template', 'Idea-template', 'Daily', 'Project-planning', 'Learning-notes', 'Thought-web', 'Responsive'],
-    topics: ['start screen', 'map template', 'starter card', 'starter card', 'starter card', 'brain-dump card', 'template card', 'template card', 'template card', 'layout behavior'],
-  },
-]
-
-const FEATURE_IDEAS = FEATURE_BLUEPRINTS.flatMap((section) =>
-  section.topics.flatMap((topic, topicIndex) =>
-    section.qualities.map((quality, qualityIndex) => ({
-      id: section.start + topicIndex * 10 + qualityIndex,
-      category: section.category,
-      title: `${quality} ${topic}`,
-    })),
-  ),
-)
-
-const FEATURE_CATEGORIES = ['All', ...FEATURE_BLUEPRINTS.map((section) => section.category)]
 
 const history = []
 const future = []
@@ -142,6 +70,39 @@ const clone = (value) => JSON.parse(JSON.stringify(value))
 const $ = (selector, root = document) => root.querySelector(selector)
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)]
 
+
+const ICONS = {
+  add: '<path d="M12 5v14M5 12h14"/>',
+  child: '<path d="M6 6h6v6H6zM12 9h5a3 3 0 0 1 3 3v1M17 13l3 3 3-3"/>',
+  connect: '<path d="M7 7h.01M17 17h.01M7 7c5 0 5 10 10 10"/>',
+  copy: '<path d="M8 8h10v10H8zM6 16H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"/>',
+  undo: '<path d="M9 7 4 12l5 5M5 12h9a5 5 0 0 1 0 10"/>',
+  redo: '<path d="m15 7 5 5-5 5M19 12h-9a5 5 0 0 0 0 10"/>',
+  fit: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  folder: '<path d="M3 7h7l2 2h9v10H3z"/>',
+  canvas: '<path d="M4 5h16v14H4zM8 9h8M8 13h5"/>',
+  nodes: '<path d="M6 6h6v6H6zM14 14h4v4h-4zM12 9h4v5"/>',
+  format: '<path d="M5 19h14M8 16l4-12 4 12M9.5 12h5"/>',
+  lines: '<path d="M5 7c6 0 8 10 14 10M5 7h.01M19 17h.01"/>',
+  outline: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  minus: '<path d="M5 12h14"/>',
+  moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>',
+  sun: '<path d="M12 4V2M12 22v-2M4.93 4.93 3.5 3.5M20.5 20.5l-1.43-1.43M4 12H2M22 12h-2M4.93 19.07 3.5 20.5M20.5 3.5l-1.43 1.43M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z"/>',
+  help: '<path d="M9.1 9a3 3 0 1 1 5.8 1c-.8 1.3-2.4 1.5-2.7 3M12 17h.01"/>',
+  save: '<path d="M5 3h12l2 2v16H5zM8 3v6h8M8 21v-7h8v7"/>',
+  upload: '<path d="M12 16V4M7 9l5-5 5 5M5 20h14"/>',
+  download: '<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>',
+  print: '<path d="M7 8V4h10v4M7 17H5v-7h14v7h-2M7 14h10v7H7z"/>',
+  search: '<path d="m21 21-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"/>',
+  eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>',
+  check: '<path d="m5 12 4 4L19 6"/>',
+}
+
+function icon(name) {
+  return `<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ICONS.help}</svg>`
+}
+
 const app = $('#app')
 app.innerHTML = `
   <div class="app-shell">
@@ -153,14 +114,16 @@ app.innerHTML = `
           <p class="brand-subtitle">Notion-style private workspace</p>
         </div>
       </div>
-      <button id="addNode" class="tool-btn tool-btn-primary">+ Node</button>
-      <button id="addChild" class="tool-btn">+ Child</button>
-      <button id="connectMode" class="tool-btn">Connect</button>
-      <button id="duplicateNode" class="tool-btn">Duplicate</button>
-      <button id="deleteNode" class="tool-btn">Delete</button>
-      <button id="undoBtn" class="tool-btn">Undo</button>
-      <button id="redoBtn" class="tool-btn">Redo</button>
-      <button id="fitBtn" class="tool-btn">Fit</button>
+      <input id="mapTitle" class="map-title-input" value="My Mind Map" aria-label="Map title" />
+      <span id="lastEdited" class="last-edited">Edited just now</span>
+      <button id="addNode" class="tool-btn tool-btn-primary">${icon('add')}<span>Add</span></button>
+      <button id="addChild" class="tool-btn">${icon('child')}<span>Child</span></button>
+      <button id="connectMode" class="tool-btn">${icon('connect')}<span>Connect</span></button>
+      <button id="duplicateNode" class="tool-btn">${icon('copy')}<span>Duplicate</span></button>
+      <button id="deleteNode" class="tool-btn">${icon('trash')}<span>Delete</span></button>
+      <button id="undoBtn" class="tool-btn">${icon('undo')}<span>Undo</span></button>
+      <button id="redoBtn" class="tool-btn">${icon('redo')}<span>Redo</span></button>
+      <button id="fitBtn" class="tool-btn">${icon('fit')}<span>Fit</span></button>
       <div class="ml-auto flex items-center gap-2">
         <span id="status" class="status-pill">Ready</span>
         <span id="zoomLabel" class="zoom-pill">100%</span>
@@ -172,39 +135,42 @@ app.innerHTML = `
         <svg id="links" class="absolute inset-0 overflow-visible" width="${WORLD_WIDTH}" height="${WORLD_HEIGHT}"></svg>
         <div id="nodesLayer" class="absolute inset-0"></div>
       </div>
+      <div id="miniMap" class="mini-map no-print">
+        <div class="mini-map-title">Overview</div>
+        <div id="miniMapNodes" class="mini-map-nodes"></div>
+      </div>
     </main>
 
     <footer class="taskbar no-print">
       <div class="taskbar-group">
-        <button class="tool-btn task-toggle" data-panel="projectPanel">Project</button>
-        <button class="tool-btn task-toggle" data-panel="canvasPanel">Canvas</button>
-        <button class="tool-btn task-toggle" data-panel="nodesPanel">Nodes</button>
-        <button class="tool-btn task-toggle" data-panel="formatPanel">Format</button>
-        <button class="tool-btn task-toggle" data-panel="linesPanel">Lines</button>
-        <button class="tool-btn task-toggle" data-panel="outlinePanel">Outline</button>
-        <button class="tool-btn task-toggle" data-panel="ideasPanel">1000 Ideas</button>
+        <button class="tool-btn task-toggle" data-panel="projectPanel">${icon('folder')}<span>Project</span></button>
+        <button class="tool-btn task-toggle" data-panel="canvasPanel">${icon('canvas')}<span>Canvas</span></button>
+        <button class="tool-btn task-toggle" data-panel="nodesPanel">${icon('nodes')}<span>Nodes</span></button>
+        <button class="tool-btn task-toggle" data-panel="formatPanel">${icon('format')}<span>Format</span></button>
+        <button class="tool-btn task-toggle" data-panel="linesPanel">${icon('lines')}<span>Lines</span></button>
+        <button class="tool-btn task-toggle" data-panel="outlinePanel">${icon('outline')}<span>Outline</span></button>
       </div>
       <div class="taskbar-divider"></div>
       <div class="taskbar-group">
-        <button id="zoomOut" class="tool-btn">−</button>
+        <button id="zoomOut" class="tool-btn icon-only" title="Zoom out">${icon('minus')}</button>
         <button id="zoomReset" class="tool-btn">100%</button>
-        <button id="zoomIn" class="tool-btn">+</button>
+        <button id="zoomIn" class="tool-btn icon-only" title="Zoom in">${icon('add')}</button>
       </div>
       <div class="ml-auto taskbar-group">
-        <button id="themeToggle" class="tool-btn">Dark mode</button>
-        <button class="tool-btn task-toggle" data-panel="shortcutsPanel">Shortcuts</button>
+        <button id="themeToggle" class="tool-btn">${icon('moon')}<span>Dark</span></button>
+        <button class="tool-btn task-toggle" data-panel="shortcutsPanel">${icon('help')}<span>Shortcuts</span></button>
       </div>
     </footer>
 
     <section id="projectPanel" class="task-panel narrow hidden no-print">
       <h2 class="panel-title">Project</h2>
       <div class="grid grid-cols-2 gap-2">
-        <button id="saveLocal" class="tool-btn">Save</button>
-        <button id="loadLocal" class="tool-btn">Load</button>
-        <button id="exportJson" class="tool-btn">Export JSON</button>
-        <button id="importJsonButton" class="tool-btn">Import JSON</button>
-        <button id="clearMap" class="tool-btn">Clear Map</button>
-        <button id="printMap" class="tool-btn">Print</button>
+        <button id="saveLocal" class="tool-btn">${icon('save')}<span>Save</span></button>
+        <button id="loadLocal" class="tool-btn">${icon('upload')}<span>Load</span></button>
+        <button id="exportJson" class="tool-btn">${icon('download')}<span>Export JSON</span></button>
+        <button id="importJsonButton" class="tool-btn">${icon('upload')}<span>Import JSON</span></button>
+        <button id="clearMap" class="tool-btn">${icon('trash')}<span>Clear Map</span></button>
+        <button id="printMap" class="tool-btn">${icon('print')}<span>Print</span></button>
       </div>
       <input id="importJson" class="hidden" type="file" accept="application/json" />
       <p class="muted-copy mt-3">Local-first. Save in this browser or export JSON as a backup.</p>
@@ -216,7 +182,13 @@ app.innerHTML = `
         <label><span class="form-label">Canvas color</span><input id="canvasColor" type="color" class="color-input" /></label>
         <label class="flex items-end gap-2 pb-1"><input id="gridToggle" type="checkbox" class="h-5 w-5 accent-[#0075de]" /> <span class="form-label">Grid</span></label>
       </div>
-      <p class="muted-copy mt-3">Dark mode changes the app chrome. You can still choose any canvas color.</p>
+      <div class="mt-4 grid grid-cols-2 gap-2">
+        <label class="feature-toggle"><input id="dotGridToggle" type="checkbox" /> <span>Dot grid</span></label>
+        <label class="feature-toggle"><input id="miniMapToggle" type="checkbox" /> <span>Mini-map</span></label>
+        <label class="feature-toggle"><input id="focusToggle" type="checkbox" /> <span>Focus mode</span></label>
+        <label class="feature-toggle"><input id="presentationToggle" type="checkbox" /> <span>Presentation</span></label>
+      </div>
+      <p class="muted-copy mt-3">Workspace UI options from the 1000-item spec are now real toggles instead of a roadmap list.</p>
     </section>
 
     <section id="nodesPanel" class="task-panel medium hidden no-print">
@@ -279,25 +251,6 @@ app.innerHTML = `
     </section>
 
 
-    <section id="ideasPanel" class="task-panel hidden no-print">
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <h2 class="panel-title">1000 UI Ideas</h2>
-          <p class="muted-copy">UI-only roadmap board generated from your 1000-item list. Search, filter, and toggle ideas as if they were enabled.</p>
-        </div>
-        <span id="ideasCount" class="zoom-pill">0 / 100 enabled</span>
-      </div>
-      <div class="mt-4 grid grid-cols-[1fr_180px] gap-3">
-        <input id="ideaSearch" class="form-input" placeholder="Search 1000 ideas..." />
-        <select id="ideaCategory" class="form-input"></select>
-      </div>
-      <div class="mt-3 flex gap-2">
-        <button id="enableVisibleIdeas" class="tool-btn">Enable visible</button>
-        <button id="resetIdeas" class="tool-btn">Reset</button>
-      </div>
-      <div id="ideasList" class="thin-scroll mt-4 grid max-h-[48vh] grid-cols-2 gap-2 overflow-y-auto pr-1"></div>
-    </section>
-
     <section id="shortcutsPanel" class="task-panel narrow right hidden no-print">
       <h2 class="panel-title">Shortcuts</h2>
       <ul class="space-y-2 muted-copy">
@@ -319,6 +272,8 @@ const els = {
   status: $('#status'),
   zoomLabel: $('#zoomLabel'),
   nodeList: $('#nodeList'),
+  miniMap: $('#miniMap'),
+  miniMapNodes: $('#miniMapNodes'),
   noSelection: $('#noSelection'),
   nodePanel: $('#nodePanel'),
 }
@@ -338,9 +293,12 @@ function getNodeDefaults() {
 
 function applyTheme() {
   document.documentElement.dataset.theme = state.theme || 'light'
+  document.documentElement.classList.toggle('focus-mode', Boolean(state.ui?.focus))
+  document.documentElement.classList.toggle('presentation-mode', Boolean(state.ui?.presentation))
+  document.documentElement.classList.toggle('compact-mode', Boolean(state.ui?.compact))
   const btn = $('#themeToggle')
   if (btn) {
-    btn.textContent = state.theme === 'dark' ? 'Light mode' : 'Dark mode'
+    btn.innerHTML = `${icon(state.theme === 'dark' ? 'sun' : 'moon')}<span>${state.theme === 'dark' ? 'Light' : 'Dark'}</span>`
     btn.classList.toggle('is-active', state.theme === 'dark')
   }
 }
@@ -406,6 +364,7 @@ function addNode(props = {}) {
   state.selectedLinkId = null
   render()
   syncPanels()
+  touchEdited()
   status('Node added')
   return node
 }
@@ -440,6 +399,7 @@ function deleteSelected() {
   state.selectedLinkId = null
   render()
   syncPanels()
+  touchEdited()
   status('Deleted')
 }
 
@@ -451,6 +411,7 @@ function clearMap() {
   state.selectedId = null
   render()
   syncPanels()
+  touchEdited()
   status('Map cleared')
 }
 
@@ -466,19 +427,54 @@ function applyTransform() {
   els.world.style.transform = `translate(${state.pan.x}px, ${state.pan.y}px) scale(${state.zoom})`
   els.world.style.transformOrigin = '0 0'
   els.zoomLabel.textContent = `${Math.round(state.zoom * 100)}%`
+  if (typeof renderMiniMap === 'function') renderMiniMap()
 }
 
 function render() {
   applyTheme()
   els.world.style.backgroundColor = state.canvas.color
   els.world.classList.toggle('canvas-grid', state.canvas.grid)
+  els.world.classList.toggle('dot-grid', Boolean(state.ui?.dotGrid && state.canvas.grid))
+  if (els.miniMap) els.miniMap.classList.toggle('hidden', !state.ui?.miniMap)
   applyTransform()
   drawLinks()
   drawNodes()
   drawNodeList()
-  renderFeatureIdeas()
+  renderMiniMap()
 }
 
+
+function renderMiniMap() {
+  if (!els.miniMapNodes) return
+  els.miniMapNodes.innerHTML = ''
+  if (!state.ui?.miniMap) return
+  const mapRect = els.miniMapNodes.getBoundingClientRect()
+  const sx = mapRect.width / WORLD_WIDTH
+  const sy = mapRect.height / WORLD_HEIGHT
+  state.nodes.forEach((node) => {
+    const dot = document.createElement('div')
+    dot.className = 'mini-node-dot'
+    dot.style.left = `${node.x * sx}px`
+    dot.style.top = `${node.y * sy}px`
+    dot.style.width = `${Math.max(4, node.w * sx)}px`
+    dot.style.height = `${Math.max(3, node.h * sy)}px`
+    els.miniMapNodes.appendChild(dot)
+  })
+  const vp = document.createElement('div')
+  const rect = els.viewport.getBoundingClientRect()
+  vp.className = 'mini-viewport'
+  vp.style.left = `${Math.max(0, (-state.pan.x / state.zoom) * sx)}px`
+  vp.style.top = `${Math.max(0, (-state.pan.y / state.zoom) * sy)}px`
+  vp.style.width = `${Math.min(mapRect.width, (rect.width / state.zoom) * sx)}px`
+  vp.style.height = `${Math.min(mapRect.height, (rect.height / state.zoom) * sy)}px`
+  els.miniMapNodes.appendChild(vp)
+}
+
+function touchEdited() {
+  state.lastEdited = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const el = $('#lastEdited')
+  if (el) el.textContent = `Edited ${state.lastEdited}`
+}
 function drawNodes() {
   els.nodesLayer.innerHTML = ''
   const fragment = document.createDocumentFragment()
@@ -594,56 +590,6 @@ function drawNodeList() {
 }
 
 
-function renderFeatureIdeas() {
-  const list = $('#ideasList')
-  const category = $('#ideaCategory')
-  const search = $('#ideaSearch')
-  const count = $('#ideasCount')
-  if (!list || !category || !search || !count) return
-
-  state.activeFeatureIdeas ||= []
-  state.featureIdeaSearch ||= ''
-  state.featureIdeaCategory ||= 'All'
-
-  if (!category.dataset.ready) {
-    category.innerHTML = FEATURE_CATEGORIES.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('')
-    category.dataset.ready = 'true'
-  }
-
-  search.value = state.featureIdeaSearch
-  category.value = state.featureIdeaCategory
-
-  const query = state.featureIdeaSearch.trim().toLowerCase()
-  const filtered = FEATURE_IDEAS.filter((idea) => {
-    const matchesCategory = state.featureIdeaCategory === 'All' || idea.category === state.featureIdeaCategory
-    const matchesSearch = !query || `${idea.title} ${idea.category}`.toLowerCase().includes(query)
-    return matchesCategory && matchesSearch
-  })
-
-  count.textContent = `${state.activeFeatureIdeas.length} / ${FEATURE_IDEAS.length} enabled`
-  list.innerHTML = ''
-
-  if (!filtered.length) {
-    list.innerHTML = '<div class="mini-node-button">No ideas match your search.</div>'
-    return
-  }
-
-  filtered.forEach((idea) => {
-    const enabled = state.activeFeatureIdeas.includes(idea.id)
-    const button = document.createElement('button')
-    button.className = `idea-card ${enabled ? 'enabled' : ''}`
-    button.dataset.ideaId = idea.id
-    button.innerHTML = `
-      <span class="idea-check">${enabled ? '✓' : idea.id}</span>
-      <span>
-        <span class="idea-title">${escapeHtml(idea.title)}</span>
-        <span class="idea-meta">${escapeHtml(idea.category)} · UI toggle only</span>
-      </span>
-    `
-    list.appendChild(button)
-  })
-}
-
 function escapeHtml(text) {
   return text.replace(/[&<>"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]))
 }
@@ -743,12 +689,19 @@ function updateNode(key, value) {
   snapshot()
   node[key] = value
   render()
+  touchEdited()
   syncPanels()
 }
 
 function syncPanels() {
   $('#canvasColor').value = state.canvas.color
+  $('#mapTitle').value = state.mapTitle || 'My Mind Map'
+  $('#lastEdited').textContent = `Edited ${state.lastEdited || 'just now'}`
   $('#gridToggle').checked = state.canvas.grid
+  $('#dotGridToggle').checked = Boolean(state.ui?.dotGrid)
+  $('#miniMapToggle').checked = Boolean(state.ui?.miniMap)
+  $('#focusToggle').checked = Boolean(state.ui?.focus)
+  $('#presentationToggle').checked = Boolean(state.ui?.presentation)
   $('#searchInput').value = state.search
   $('#outline').value = state.outline
   $('#lineColor').value = state.linkDefaults.color
@@ -895,42 +848,33 @@ function bindEvents() {
     status(`${nextTheme === 'dark' ? 'Dark' : 'Light'} mode`)
   })
 
-  $('#ideaSearch').addEventListener('input', (event) => {
-    state.featureIdeaSearch = event.target.value
-    renderFeatureIdeas()
+  $('#mapTitle').addEventListener('input', (event) => {
+    state.mapTitle = event.target.value || 'Untitled Map'
+    touchEdited()
   })
 
-  $('#ideaCategory').addEventListener('change', (event) => {
-    state.featureIdeaCategory = event.target.value
-    renderFeatureIdeas()
+  $('#dotGridToggle').addEventListener('change', (event) => {
+    state.ui.dotGrid = event.target.checked
+    render()
+    status(event.target.checked ? 'Dot grid on' : 'Dot grid off')
   })
 
-  $('#ideasList').addEventListener('click', (event) => {
-    const card = event.target.closest('.idea-card')
-    if (!card) return
-    const id = Number(card.dataset.ideaId)
-    state.activeFeatureIdeas ||= []
-    if (state.activeFeatureIdeas.includes(id)) {
-      state.activeFeatureIdeas = state.activeFeatureIdeas.filter((item) => item !== id)
-      status('UI idea disabled')
-    } else {
-      state.activeFeatureIdeas.push(id)
-      status('UI idea enabled')
-    }
-    renderFeatureIdeas()
+  $('#miniMapToggle').addEventListener('change', (event) => {
+    state.ui.miniMap = event.target.checked
+    render()
+    status(event.target.checked ? 'Mini-map shown' : 'Mini-map hidden')
   })
 
-  $('#enableVisibleIdeas').addEventListener('click', () => {
-    const visibleIds = $$('.idea-card', $('#ideasList')).map((card) => Number(card.dataset.ideaId))
-    state.activeFeatureIdeas = [...new Set([...(state.activeFeatureIdeas || []), ...visibleIds])]
-    renderFeatureIdeas()
-    status('Visible ideas enabled')
+  $('#focusToggle').addEventListener('change', (event) => {
+    state.ui.focus = event.target.checked
+    render()
+    status(event.target.checked ? 'Focus mode on' : 'Focus mode off')
   })
 
-  $('#resetIdeas').addEventListener('click', () => {
-    state.activeFeatureIdeas = []
-    renderFeatureIdeas()
-    status('Idea toggles reset')
+  $('#presentationToggle').addEventListener('change', (event) => {
+    state.ui.presentation = event.target.checked
+    render()
+    status(event.target.checked ? 'Presentation mode on' : 'Presentation mode off')
   })
 
   $('#addNode').addEventListener('click', () => {

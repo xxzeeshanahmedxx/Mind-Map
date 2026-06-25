@@ -219,3 +219,48 @@
   #viewport { position: static !important; height: 100vh !important; overflow: visible !important; }
   #world { transform: none !important; box-shadow: none !important; }
 }
+
+@layer components {
+  .btn-icon { width: 16px; height: 16px; flex: none; }
+  .icon-only { width: 34px; padding-inline: 0; }
+  .map-title-input {
+    width: min(280px, 24vw);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    padding: 6px 10px;
+    color: var(--notion-ink);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.125px;
+    outline: none;
+  }
+  .map-title-input:focus { border-color: var(--notion-hairline); background: var(--notion-surface); box-shadow: var(--shadow-soft); }
+  .last-edited { color: var(--notion-ink-faint); font-size: 12px; white-space: nowrap; }
+  .mini-map {
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
+    z-index: 30;
+    width: 188px;
+    height: 132px;
+    border: 1px solid var(--notion-hairline);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--notion-surface) 90%, transparent);
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(8px);
+    overflow: hidden;
+  }
+  .mini-map-title { padding: 7px 10px; border-bottom: 1px solid var(--notion-hairline); color: var(--notion-ink-muted); font-size: 12px; font-weight: 600; }
+  .mini-map-nodes { position: relative; height: calc(100% - 32px); }
+  .mini-node-dot { position: absolute; min-width: 4px; min-height: 3px; border-radius: 3px; background: var(--notion-primary); opacity: .75; }
+  .mini-viewport { position: absolute; border: 1px solid var(--notion-primary); border-radius: 4px; background: rgba(0,117,222,.08); }
+  .feature-toggle { display:flex; align-items:center; gap:8px; border:1px solid var(--notion-hairline); border-radius:8px; background:var(--notion-surface); padding:8px 10px; color:var(--notion-ink-secondary); font-size:14px; }
+  .feature-toggle input { accent-color: var(--notion-primary); }
+  .dot-grid { background-image: radial-gradient(rgba(0,0,0,.14) 1px, transparent 1px) !important; background-size: 22px 22px !important; }
+  [data-theme="dark"] .dot-grid { background-image: radial-gradient(rgba(255,255,255,.16) 1px, transparent 1px) !important; }
+  .focus-mode .top-nav .tool-btn:not(.tool-btn-primary), .focus-mode .last-edited { opacity: .25; }
+  .presentation-mode .top-nav, .presentation-mode .taskbar { transform: translateY(-4px); opacity: .18; transition: opacity 120ms ease; }
+  .presentation-mode .top-nav:hover, .presentation-mode .taskbar:hover { opacity: 1; }
+  .compact-mode .tool-btn span { display: none; }
+}
