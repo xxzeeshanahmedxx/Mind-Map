@@ -64,6 +64,7 @@ let isRestoring = false
 let dragState = null
 let panState = null
 let suppressNextNodeClick = false
+let fileHandle = null
 
 const uid = (prefix = 'id') => `${prefix}_${Math.random().toString(36).slice(2, 10)}`
 const clone = (value) => JSON.parse(JSON.stringify(value))
@@ -775,13 +776,52 @@ function fitToNodes() {
   render()
 }
 
-function exportJson() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' })
+function mapFileName() {
+  const title = (state.mapTitle || 'mind-map').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'mind-map'
+  return `${title}.mindmap.json`
+}
+
+function serializeMap() {
+  state.outline = $('#outline')?.value || state.outline
+  state.mapTitle = $('#mapTitle')?.value || state.mapTitle
+  return JSON.stringify({ ...state, savedAt: new Date().toISOString() }, null, 2)
+}
+
+function downloadMapFile() {
+  const blob = new Blob([serializeMap()], { type: 'application/json' })
   const link = document.createElement('a')
   link.href = URL.createObjectURL(blob)
-  link.download = `mind-map-${new Date().toISOString().slice(0, 10)}.json`
+  link.download = mapFileName()
   link.click()
   URL.revokeObjectURL(link.href)
+}
+
+async function writeMapToDisk() {
+  if (!('showSaveFilePicker' in window)) {
+    downloadMapFile()
+    return 'download'
+  }
+
+  if (!fileHandle) {
+    fileHandle = await window.showSaveFilePicker({
+      suggestedName: mapFileName(),
+      types: [
+        {
+          description: 'Mind Map JSON file',
+          accept: { 'application/json': ['.json', '.mindmap.json'] },
+        },
+      ],
+    })
+  }
+
+  const writable = await fileHandle.createWritable()
+  await writable.write(serializeMap())
+  await writable.close()
+  return 'disk'
+}
+
+function exportJson() {
+  downloadMapFile()
 }
 
 function importJson(file) {
@@ -840,11 +880,22 @@ function createFromOutline() {
   status('Outline converted')
 }
 
-function saveCurrentMap() {
-  state.outline = $('#outline')?.value || state.outline
-  state.mapTitle = $('#mapTitle')?.value || state.mapTitle
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-  status('Saved locally')
+async function saveCurrentMap() {
+  try {
+    const serialized = serializeMap()
+    localStorage.setItem(STORAGE_KEY, serialized)
+    const mode = await writeMapToDisk()
+    status(mode === 'disk' ? 'Saved to file on your PC' : 'Downloaded save file')
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      status('File save cancelled')
+      return
+    }
+    console.error(error)
+    localStorage.setItem(STORAGE_KEY, serializeMap())
+    downloadMapFile()
+    status('Downloaded backup file')
+  }
 }
 
 function bindEvents() {
@@ -1046,7 +1097,7 @@ function bindEvents() {
     const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName) || event.target.isContentEditable
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
       event.preventDefault()
-      $('#saveLocal').click()
+      saveCurrentMap()
       return
     }
     if (typing) return
