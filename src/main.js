@@ -7,23 +7,23 @@ const WORLD_HEIGHT = 2800
 const defaultNode = {
   x: 520,
   y: 360,
-  w: 220,
-  h: 92,
+  w: 150,
+  h: 52,
   text: 'New idea',
   fill: '#dbeafe',
   color: '#0f172a',
   border: '#2563eb',
   font: 'Inter',
-  size: 20,
+  size: 15,
   bold: false,
   italic: false,
   underline: false,
   align: 'center',
   shape: 'rounded',
-  borderW: 2,
-  radius: 18,
+  borderW: 1,
+  radius: 10,
   opacity: 100,
-  padding: 12,
+  padding: 7,
   shadow: true,
 }
 
@@ -34,7 +34,7 @@ let state = {
   selectedLinkId: null,
   connectMode: false,
   connectFrom: null,
-  pan: { x: 180, y: 96 },
+  pan: { x: 140, y: 70 },
   zoom: 1,
   canvas: {
     color: '#f8fafc',
@@ -64,13 +64,13 @@ const $$ = (selector, root = document) => [...root.querySelectorAll(selector)]
 
 const app = $('#app')
 app.innerHTML = `
-  <div class="grid h-full grid-rows-[64px_1fr] bg-slate-950 text-slate-100">
-    <header class="no-print flex min-w-0 items-center gap-2 border-b border-slate-800 bg-slate-950 px-4 shadow-xl">
-      <div class="mr-3 flex min-w-[250px] items-center gap-3">
-        <div class="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-sky-400 to-violet-500 text-xl shadow-lg">🧠</div>
+  <div class="grid h-full grid-rows-[52px_1fr] bg-slate-950 text-slate-100">
+    <header class="no-print flex min-w-0 items-center gap-1.5 border-b border-slate-800 bg-slate-950 px-3 shadow-xl">
+      <div class="mr-2 flex min-w-[210px] items-center gap-1.5">
+        <div class="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-sky-400 to-violet-500 text-base shadow-lg">🧠</div>
         <div>
-          <h1 class="text-base font-black leading-tight text-white">Mind Map Canvas</h1>
-          <p class="text-xs font-medium text-slate-400">Vite + Tailwind + JavaScript</p>
+          <h1 class="text-[11px] font-black leading-tight text-white">Mind Map Canvas</h1>
+          <p class="text-[10px] font-medium text-slate-400">Vite + Tailwind + JavaScript</p>
         </div>
       </div>
       <button id="addNode" class="tool-btn tool-btn-primary">+ Node</button>
@@ -82,17 +82,17 @@ app.innerHTML = `
       <button id="undoBtn" class="tool-btn">Undo</button>
       <button id="redoBtn" class="tool-btn">Redo</button>
       <button id="fitBtn" class="tool-btn">Fit</button>
-      <div class="ml-auto flex items-center gap-3">
-        <span id="status" class="hidden rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs font-semibold text-slate-300 xl:inline-flex">Ready</span>
-        <span id="zoomLabel" class="rounded-full border border-sky-900 bg-sky-950 px-3 py-1 text-xs font-black text-sky-200">100%</span>
+      <div class="ml-auto flex items-center gap-1.5">
+        <span id="status" class="hidden rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-[11px] font-semibold text-slate-300 xl:inline-flex">Ready</span>
+        <span id="zoomLabel" class="rounded-full border border-sky-900 bg-sky-950 px-3 py-1 text-[11px] font-black text-sky-200">100%</span>
       </div>
     </header>
 
-    <div class="grid min-h-0 grid-cols-[320px_1fr_360px]">
-      <aside class="no-print sidebar-scroll min-h-0 overflow-y-auto border-r border-slate-800 bg-slate-900 p-4">
+    <div class="grid min-h-0 grid-cols-[260px_1fr_300px]">
+      <aside class="no-print sidebar-scroll min-h-0 overflow-y-auto border-r border-slate-800 bg-slate-900 p-3">
         <section class="panel">
           <h2 class="panel-title">Project</h2>
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-2 gap-1.5">
             <button id="saveLocal" class="tool-btn">Save</button>
             <button id="loadLocal" class="tool-btn">Load</button>
             <button id="exportJson" class="tool-btn">Export</button>
@@ -101,38 +101,38 @@ app.innerHTML = `
             <button id="printMap" class="tool-btn">Print</button>
           </div>
           <input id="importJson" class="hidden" type="file" accept="application/json" />
-          <p class="mt-3 text-xs leading-relaxed text-slate-400">Everything runs locally in your browser. Use Export JSON to keep a backup file.</p>
+          <p class="mt-3 text-[11px] leading-relaxed text-slate-400">Everything runs locally in your browser. Use Export JSON to keep a backup file.</p>
         </section>
 
-        <section class="panel mt-4">
+        <section class="panel mt-3">
           <h2 class="panel-title">Canvas</h2>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-2 gap-1.5">
             <label><span class="form-label">Color</span><input id="canvasColor" type="color" class="color-input" /></label>
-            <label class="flex items-end gap-3 pb-2"><input id="gridToggle" type="checkbox" class="h-5 w-5 accent-sky-500" /> <span class="form-label">Grid</span></label>
+            <label class="flex items-end gap-1.5 pb-2"><input id="gridToggle" type="checkbox" class="h-5 w-5 accent-sky-500" /> <span class="form-label">Grid</span></label>
           </div>
-          <div class="mt-3 grid grid-cols-3 gap-2">
+          <div class="mt-3 grid grid-cols-3 gap-1.5">
             <button id="zoomOut" class="tool-btn">−</button>
             <button id="zoomReset" class="tool-btn">100%</button>
             <button id="zoomIn" class="tool-btn">+</button>
           </div>
         </section>
 
-        <section class="panel mt-4">
+        <section class="panel mt-3">
           <h2 class="panel-title">Search Nodes</h2>
           <input id="searchInput" class="form-input" placeholder="Search your ideas..." />
-          <div id="nodeList" class="thin-scroll mt-3 flex max-h-72 flex-col gap-2 overflow-y-auto pr-1"></div>
+          <div id="nodeList" class="thin-scroll mt-3 flex max-h-72 flex-col gap-1.5 overflow-y-auto pr-1"></div>
         </section>
 
-        <section class="panel mt-4">
+        <section class="panel mt-3">
           <h2 class="panel-title">Outline to Mind Map</h2>
-          <textarea id="outline" class="thin-scroll min-h-36 w-full resize-y rounded-xl border border-slate-600 bg-slate-800 p-3 text-sm text-slate-100 outline-none focus:border-sky-400" placeholder="Main topic\nFirst point\nSecond point\nExample\nConclusion"></textarea>
+          <textarea id="outline" class="thin-scroll min-h-28 w-full resize-y rounded-lg border border-slate-600 bg-slate-800 p-3 text-[11px] text-slate-100 outline-none focus:border-sky-400" placeholder="Main topic\nFirst point\nSecond point\nExample\nConclusion"></textarea>
           <button id="outlineToNodes" class="tool-btn tool-btn-primary mt-3 w-full">Create From Outline</button>
-          <p class="mt-2 text-xs leading-relaxed text-slate-400">First line becomes the center topic. Remaining lines become connected ideas.</p>
+          <p class="mt-2 text-[11px] leading-relaxed text-slate-400">First line becomes the center topic. Remaining lines become connected ideas.</p>
         </section>
       </aside>
 
       <main id="viewport" class="relative min-w-0 overflow-hidden bg-slate-700">
-        <div class="pointer-events-none absolute left-4 top-4 z-20 rounded-2xl border border-slate-700 bg-slate-950/80 p-3 text-xs text-slate-300 shadow-xl backdrop-blur no-print">
+        <div class="pointer-events-none absolute left-3 top-3 z-20 rounded-lg border border-slate-700 bg-slate-950/80 px-2.5 py-1.5 text-[11px] text-slate-300 shadow-xl backdrop-blur no-print">
           <b class="text-white">Controls:</b> drag canvas to pan · mouse wheel to zoom · double-click node to edit · Delete removes selected
         </div>
         <div id="world" class="canvas-grid absolute left-0 top-0 shadow-2xl" style="width:${WORLD_WIDTH}px;height:${WORLD_HEIGHT}px;">
@@ -141,31 +141,31 @@ app.innerHTML = `
         </div>
       </main>
 
-      <aside class="no-print sidebar-scroll min-h-0 overflow-y-auto border-l border-slate-800 bg-slate-900 p-4">
+      <aside class="no-print sidebar-scroll min-h-0 overflow-y-auto border-l border-slate-800 bg-slate-900 p-3">
         <section class="panel">
           <h2 class="panel-title">Node Formatting</h2>
-          <div id="noSelection" class="rounded-xl border border-dashed border-slate-700 p-4 text-sm leading-relaxed text-slate-400">Select a node to edit its formatting.</div>
-          <div id="nodePanel" class="hidden space-y-4">
-            <label><span class="form-label">Text</span><textarea id="nodeText" class="thin-scroll mt-1 min-h-24 w-full resize-y rounded-xl border border-slate-600 bg-slate-800 p-3 text-sm text-slate-100 outline-none focus:border-sky-400"></textarea></label>
-            <div class="grid grid-cols-3 gap-3">
+          <div id="noSelection" class="rounded-lg border border-dashed border-slate-700 p-3 text-[11px] leading-relaxed text-slate-400">Select a node to edit.</div>
+          <div id="nodePanel" class="hidden space-y-3">
+            <label><span class="form-label">Text</span><textarea id="nodeText" class="thin-scroll mt-1 min-h-16 w-full resize-y rounded-lg border border-slate-600 bg-slate-800 p-3 text-[11px] text-slate-100 outline-none focus:border-sky-400"></textarea></label>
+            <div class="grid grid-cols-3 gap-1.5">
               <label><span class="form-label">Text</span><input id="textColor" type="color" class="color-input" /></label>
               <label><span class="form-label">Fill</span><input id="fillColor" type="color" class="color-input" /></label>
               <label><span class="form-label">Border</span><input id="borderColor" type="color" class="color-input" /></label>
             </div>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-1.5">
               <label><span class="form-label">Font</span><select id="fontFamily" class="form-input"><option>Inter</option><option>Arial</option><option>Verdana</option><option>Georgia</option><option>Times New Roman</option><option>Courier New</option><option>Trebuchet MS</option><option>Impact</option></select></label>
               <label><span class="form-label">Size</span><input id="fontSize" type="number" min="8" max="96" class="form-input" /></label>
             </div>
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid grid-cols-3 gap-1.5">
               <button id="boldBtn" class="tool-btn">Bold</button>
               <button id="italicBtn" class="tool-btn">Italic</button>
               <button id="underlineBtn" class="tool-btn">Underline</button>
             </div>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-1.5">
               <label><span class="form-label">Align</span><select id="align" class="form-input"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></label>
               <label><span class="form-label">Shape</span><select id="shape" class="form-input"><option value="rounded">Rounded</option><option value="rect">Rectangle</option><option value="ellipse">Ellipse</option><option value="diamond">Diamond</option></select></label>
             </div>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-1.5">
               <label><span class="form-label">Width</span><input id="nodeW" type="number" min="40" max="900" class="form-input" /></label>
               <label><span class="form-label">Height</span><input id="nodeH" type="number" min="30" max="700" class="form-input" /></label>
               <label><span class="form-label">Border</span><input id="borderW" type="number" min="0" max="24" class="form-input" /></label>
@@ -173,24 +173,24 @@ app.innerHTML = `
               <label><span class="form-label">Opacity %</span><input id="opacity" type="number" min="10" max="100" class="form-input" /></label>
               <label><span class="form-label">Padding</span><input id="padding" type="number" min="0" max="80" class="form-input" /></label>
             </div>
-            <label class="flex items-center gap-3"><input id="shadowToggle" type="checkbox" class="h-5 w-5 accent-sky-500" /><span class="form-label">Drop shadow</span></label>
+            <label class="flex items-center gap-1.5"><input id="shadowToggle" type="checkbox" class="h-5 w-5 accent-sky-500" /><span class="form-label">Drop shadow</span></label>
           </div>
         </section>
 
-        <section class="panel mt-4">
+        <section class="panel mt-3">
           <h2 class="panel-title">Connector Formatting</h2>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-2 gap-1.5">
             <label><span class="form-label">Color</span><input id="lineColor" type="color" class="color-input" /></label>
             <label><span class="form-label">Thickness</span><input id="lineWidth" type="number" min="1" max="20" class="form-input" /></label>
             <label><span class="form-label">Type</span><select id="lineType" class="form-input"><option value="curve">Curved</option><option value="straight">Straight</option><option value="elbow">Elbow</option></select></label>
-            <label class="flex items-end gap-3 pb-2"><input id="lineDash" type="checkbox" class="h-5 w-5 accent-sky-500" /> <span class="form-label">Dashed</span></label>
+            <label class="flex items-end gap-1.5 pb-2"><input id="lineDash" type="checkbox" class="h-5 w-5 accent-sky-500" /> <span class="form-label">Dashed</span></label>
           </div>
           <button id="applyLineAll" class="tool-btn mt-3 w-full">Apply to All Lines</button>
         </section>
 
-        <section class="panel mt-4">
+        <section class="panel mt-3">
           <h2 class="panel-title">Keyboard Shortcuts</h2>
-          <ul class="space-y-2 text-xs leading-relaxed text-slate-400">
+          <ul class="space-y-2 text-[11px] leading-relaxed text-slate-400">
             <li><b class="text-slate-200">Ctrl/⌘ + S:</b> save locally</li>
             <li><b class="text-slate-200">Ctrl/⌘ + Z:</b> undo</li>
             <li><b class="text-slate-200">Ctrl/⌘ + D:</b> duplicate node</li>
@@ -259,8 +259,8 @@ function addChild() {
     return
   }
   const child = addNode({
-    x: parent.x + parent.w + 150,
-    y: parent.y + parent.h / 2 + 40,
+    x: parent.x + parent.w + 80,
+    y: parent.y + parent.h / 2 + 24,
     text: 'Child idea',
   })
   state.links.push({ id: uid('link'), from: parent.id, to: child.id, ...clone(state.linkDefaults) })
@@ -417,14 +417,14 @@ function drawNodeList() {
   els.nodeList.innerHTML = ''
 
   if (!nodes.length) {
-    els.nodeList.innerHTML = '<div class="rounded-xl border border-slate-700 p-3 text-sm text-slate-400">No nodes found.</div>'
+    els.nodeList.innerHTML = '<div class="rounded-lg border border-slate-700 p-3 text-[11px] text-slate-400">No nodes found.</div>'
     return
   }
 
   nodes.forEach((node) => {
     const item = document.createElement('button')
-    item.className = `rounded-xl border px-3 py-2 text-left text-sm transition ${node.id === state.selectedId ? 'border-sky-400 bg-sky-950 text-sky-100' : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-500'}`
-    item.innerHTML = `<div class="font-bold">${escapeHtml(node.text.slice(0, 48)) || 'Untitled'}</div><div class="mt-1 text-xs text-slate-500">x:${Math.round(node.x)} y:${Math.round(node.y)}</div>`
+    item.className = `rounded-lg border px-2.5 py-1.5 text-left text-[11px] transition ${node.id === state.selectedId ? 'border-sky-400 bg-sky-950 text-sky-100' : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-500'}`
+    item.innerHTML = `<div class="font-bold">${escapeHtml(node.text.slice(0, 48)) || 'Untitled'}</div><div class="mt-1 text-[11px] text-slate-500">x:${Math.round(node.x)} y:${Math.round(node.y)}</div>`
     item.addEventListener('click', () => {
       state.selectedId = node.id
       focusNode(node)
@@ -615,14 +615,14 @@ function createFromOutline() {
   state.nodes = []
   state.links = []
 
-  const root = { ...clone(defaultNode), id: uid('node'), x: 1850, y: 1280, w: 280, h: 112, text: lines[0], fill: '#fef3c7', border: '#f59e0b', size: 28, bold: true }
+  const root = { ...clone(defaultNode), id: uid('node'), x: 1850, y: 1280, w: 210, h: 72, text: lines[0], fill: '#fef3c7', border: '#f59e0b', size: 19, bold: true }
   state.nodes.push(root)
 
   const count = lines.length - 1
   lines.slice(1).forEach((line, index) => {
     const angle = (Math.PI * 2 * index) / Math.max(1, count)
-    const distanceX = 560
-    const distanceY = 360
+    const distanceX = 380
+    const distanceY = 240
     const node = { ...clone(defaultNode), id: uid('node'), x: root.x + Math.cos(angle) * distanceX, y: root.y + Math.sin(angle) * distanceY, text: line }
     const palette = [
       ['#dcfce7', '#16a34a'],
@@ -653,7 +653,7 @@ function bindEvents() {
       x: (rect.width / 2 - state.pan.x) / state.zoom,
       y: (rect.height / 2 - state.pan.y) / state.zoom,
     }
-    addNode({ x: Math.round(center.x - 110), y: Math.round(center.y - 46) })
+    addNode({ x: Math.round(center.x - 75), y: Math.round(center.y - 26) })
   })
   $('#addChild').addEventListener('click', addChild)
   $('#duplicateNode').addEventListener('click', duplicateNode)
@@ -825,11 +825,11 @@ function zoomBy(multiplier) {
 }
 
 function seedDemo() {
-  const main = { ...clone(defaultNode), id: uid('node'), x: 1850, y: 1280, w: 300, h: 118, text: 'Explain Your Topic', fill: '#fef3c7', border: '#f59e0b', size: 30, bold: true }
-  const n1 = { ...clone(defaultNode), id: uid('node'), x: 2300, y: 1040, text: 'Definition', fill: '#dcfce7', border: '#16a34a' }
-  const n2 = { ...clone(defaultNode), id: uid('node'), x: 2310, y: 1420, text: 'Examples', fill: '#fae8ff', border: '#c026d3' }
-  const n3 = { ...clone(defaultNode), id: uid('node'), x: 1390, y: 1035, text: 'Why it matters', fill: '#e0f2fe', border: '#0284c7' }
-  const n4 = { ...clone(defaultNode), id: uid('node'), x: 1400, y: 1435, text: 'Conclusion', fill: '#fee2e2', border: '#dc2626' }
+  const main = { ...clone(defaultNode), id: uid('node'), x: 1850, y: 1280, w: 210, h: 72, text: 'Explain Your Topic', fill: '#fef3c7', border: '#f59e0b', size: 19, bold: true }
+  const n1 = { ...clone(defaultNode), id: uid('node'), x: 2190, y: 1110, text: 'Definition', fill: '#dcfce7', border: '#16a34a' }
+  const n2 = { ...clone(defaultNode), id: uid('node'), x: 2195, y: 1430, text: 'Examples', fill: '#fae8ff', border: '#c026d3' }
+  const n3 = { ...clone(defaultNode), id: uid('node'), x: 1530, y: 1110, text: 'Why it matters', fill: '#e0f2fe', border: '#0284c7' }
+  const n4 = { ...clone(defaultNode), id: uid('node'), x: 1535, y: 1430, text: 'Conclusion', fill: '#fee2e2', border: '#dc2626' }
   state.nodes = [main, n1, n2, n3, n4]
   state.links = [n1, n2, n3, n4].map((node) => ({ id: uid('link'), from: main.id, to: node.id, ...clone(state.linkDefaults) }))
   state.selectedId = main.id

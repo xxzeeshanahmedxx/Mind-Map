@@ -23,7 +23,7 @@
 
 @layer components {
   .tool-btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:border-sky-400 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40;
+    @apply inline-flex items-center justify-center gap-1 rounded-lg border border-slate-600 bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-100 transition hover:border-sky-400 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40;
   }
 
   .tool-btn-primary {
@@ -35,23 +35,23 @@
   }
 
   .panel {
-    @apply rounded-2xl border border-slate-700 bg-slate-950/55 p-4 shadow-lg;
+    @apply rounded-xl border border-slate-700 bg-slate-950/55 p-3 shadow-lg;
   }
 
   .panel-title {
-    @apply mb-3 text-sm font-black uppercase tracking-[0.14em] text-slate-300;
+    @apply mb-2 text-[11px] font-black uppercase tracking-[0.14em] text-slate-300;
   }
 
   .form-label {
-    @apply text-xs font-bold uppercase tracking-wide text-slate-400;
+    @apply text-[10px] font-bold uppercase tracking-wide text-slate-400;
   }
 
   .form-input {
-    @apply mt-1 h-10 w-full rounded-xl border border-slate-600 bg-slate-800 px-3 text-sm text-slate-100 outline-none transition focus:border-sky-400;
+    @apply mt-1 h-8 w-full rounded-lg border border-slate-600 bg-slate-800 px-2 text-xs text-slate-100 outline-none transition focus:border-sky-400;
   }
 
   .color-input {
-    @apply mt-1 h-10 w-full cursor-pointer rounded-xl border border-slate-600 bg-slate-800 p-1;
+    @apply mt-1 h-8 w-full cursor-pointer rounded-lg border border-slate-600 bg-slate-800 p-1;
   }
 
   .node-card {
@@ -98,7 +98,7 @@
     background-image:
       linear-gradient(rgba(148, 163, 184, 0.23) 1px, transparent 1px),
       linear-gradient(90deg, rgba(148, 163, 184, 0.23) 1px, transparent 1px);
-    background-size: 26px 26px;
+    background-size: 22px 22px;
   }
 
   .sidebar-scroll::-webkit-scrollbar,
