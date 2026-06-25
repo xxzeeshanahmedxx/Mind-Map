@@ -65,6 +65,8 @@ let dragState = null
 let panState = null
 let suppressNextNodeClick = false
 let fileHandle = null
+let decorationsFrame = null
+let miniMapFrame = null
 
 const uid = (prefix = 'id') => `${prefix}_${Math.random().toString(36).slice(2, 10)}`
 const clone = (value) => JSON.parse(JSON.stringify(value))
@@ -467,7 +469,7 @@ function applyTransform() {
   els.world.style.transform = `translate(${state.pan.x}px, ${state.pan.y}px) scale(${state.zoom})`
   els.world.style.transformOrigin = '0 0'
   els.zoomLabel.textContent = `${Math.round(state.zoom * 100)}%`
-  if (typeof renderMiniMap === 'function') renderMiniMap()
+  if (typeof scheduleMiniMapUpdate === 'function') scheduleMiniMapUpdate()
 }
 
 function render() {
@@ -508,6 +510,23 @@ function renderMiniMap() {
   vp.style.width = `${Math.min(mapRect.width, (rect.width / state.zoom) * sx)}px`
   vp.style.height = `${Math.min(mapRect.height, (rect.height / state.zoom) * sy)}px`
   els.miniMapNodes.appendChild(vp)
+}
+
+function scheduleMiniMapUpdate() {
+  if (miniMapFrame) return
+  miniMapFrame = requestAnimationFrame(() => {
+    miniMapFrame = null
+    renderMiniMap()
+  })
+}
+
+function scheduleCanvasDecorations() {
+  if (decorationsFrame) return
+  decorationsFrame = requestAnimationFrame(() => {
+    decorationsFrame = null
+    drawLinks()
+    renderMiniMap()
+  })
 }
 
 function touchEdited() {
@@ -719,7 +738,6 @@ function startNodeDrag(event) {
   event.stopPropagation()
   const node = state.nodes.find((item) => item.id === event.currentTarget.dataset.id)
   if (!node) return
-  snapshot()
   const point = worldPointFromEvent(event)
   state.selectedId = node.id
   state.selectedLinkId = null
@@ -730,6 +748,7 @@ function startNodeDrag(event) {
     startX: event.clientX,
     startY: event.clientY,
     moved: false,
+    snapshotted: false,
   }
   $$('.node-card').forEach((card) => card.classList.toggle('selected', card.dataset.id === node.id))
   syncPanels()
@@ -743,15 +762,27 @@ function moveNode(event) {
   if (!node) return
   if (Math.abs(event.clientX - dragState.startX) > 3 || Math.abs(event.clientY - dragState.startY) > 3) {
     dragState.moved = true
+    if (!dragState.snapshotted) {
+      snapshot()
+      dragState.snapshotted = true
+    }
   }
   const point = worldPointFromEvent(event)
   node.x = Math.round(point.x - dragState.offsetX)
   node.y = Math.round(point.y - dragState.offsetY)
-  render()
+  const el = document.querySelector(`.node-card[data-id="${node.id}"]`)
+  if (el) {
+    el.style.left = `${node.x}px`
+    el.style.top = `${node.y}px`
+  }
+  scheduleCanvasDecorations()
 }
 
 function stopNodeDrag() {
   if (dragState?.moved) {
+    drawLinks()
+    renderMiniMap()
+    touchEdited()
     suppressNextNodeClick = true
     window.setTimeout(() => {
       suppressNextNodeClick = false
