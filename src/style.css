@@ -374,3 +374,54 @@
     background: color-mix(in srgb, var(--notion-primary) 8%, transparent);
   }
 }
+
+@layer components {
+  .format-bar {
+    position: absolute;
+    left: 50%;
+    bottom: 86px;
+    z-index: 85;
+    transform: translateX(-50%);
+    width: min(calc(100vw - 32px), 1180px);
+    max-height: 210px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border: 1px solid var(--notion-hairline);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--notion-surface-raised) 94%, transparent);
+    padding: 10px;
+    box-shadow: var(--shadow-elevated);
+    backdrop-filter: blur(10px);
+  }
+  .format-bar #noSelection { display: none !important; }
+  .format-bar #nodePanel {
+    display: flex !important;
+    align-items: end;
+    gap: 10px;
+    width: max-content;
+  }
+  .format-bar #nodePanel.hidden { display: none !important; }
+  .format-bar label { min-width: 88px; }
+  .format-bar #nodeText {
+    width: 190px;
+    min-height: 34px;
+    max-height: 64px;
+  }
+  .format-bar .grid {
+    display: flex !important;
+    align-items: end;
+    gap: 8px;
+  }
+  .format-bar .color-input,
+  .format-bar .form-input {
+    width: 88px;
+  }
+  .format-bar #fontFamily { width: 120px; }
+  .format-bar #align,
+  .format-bar #shape { width: 104px; }
+  .format-bar .tool-btn {
+    min-width: 34px;
+  }
+  .format-bar::-webkit-scrollbar { height: 8px; }
+  .format-bar::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--notion-ink-faint) 45%, transparent); border-radius: 999px; }
+}

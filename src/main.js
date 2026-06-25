@@ -148,7 +148,6 @@ app.innerHTML = `
       <div class="taskbar-group">
         <button class="tool-btn task-toggle" data-panel="canvasPanel">${icon('canvas')}<span>Canvas</span></button>
         <button class="tool-btn task-toggle" data-panel="nodesPanel">${icon('nodes')}<span>Nodes</span></button>
-        <button class="tool-btn task-toggle" data-panel="formatPanel">${icon('format')}<span>Format</span></button>
         <button class="tool-btn task-toggle" data-panel="linesPanel">${icon('lines')}<span>Lines</span></button>
         <button class="tool-btn task-toggle" data-panel="outlinePanel">${icon('outline')}<span>Outline</span></button>
       </div>
@@ -200,8 +199,7 @@ app.innerHTML = `
       <div id="nodeList" class="thin-scroll mt-3 flex max-h-80 flex-col gap-2 overflow-y-auto pr-1"></div>
     </section>
 
-    <section id="formatPanel" class="task-panel right hidden no-print">
-      <h2 class="panel-title">Node Formatting</h2>
+    <section id="formatPanel" class="format-bar hidden no-print">
       <div id="noSelection" class="rounded-lg p-4 muted-copy">Select a node to edit.</div>
       <div id="nodePanel" class="hidden space-y-4">
         <label><span class="form-label">Text</span><textarea id="nodeText" class="textarea-input thin-scroll min-h-20"></textarea></label>
@@ -842,6 +840,7 @@ function syncPanels() {
   applyTheme()
 
   const node = selectedNode()
+  $('#formatPanel')?.classList.toggle('hidden', !node)
   els.noSelection.classList.toggle('hidden', Boolean(node))
   els.nodePanel.classList.toggle('hidden', !node)
   if (!node) return
@@ -1229,6 +1228,7 @@ function bindEvents() {
   els.viewport.addEventListener('mousedown', (event) => {
     if (event.target.closest?.('.node-card')) return
     state.selectedId = null
+    $('#formatPanel')?.classList.add('hidden')
     syncPanels()
     render()
     panState = { x: event.clientX - state.pan.x, y: event.clientY - state.pan.y }
