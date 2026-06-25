@@ -880,21 +880,68 @@ function createFromOutline() {
   status('Outline converted')
 }
 
-async function saveCurrentMap() {
+
+async function saveMapToD1(serialized) {
+  const response = await fetch('/api/map', {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json' },
+    body: serialized,
+  })
+
+  if (!response.ok) {
+    const message = await response.text().catch(() => '')
+    throw new Error(message || `D1 save failed with ${response.status}`)
+  }
+
+  return response.json()
+}
+
+async function loadMapFromD1() {
   try {
-    const serialized = serializeMap()
-    localStorage.setItem(STORAGE_KEY, serialized)
+    const response = await fetch('/api/map', { cache: 'no-store' })
+    if (!response.ok) return false
+    const result = await response.json()
+    if (!result?.exists || !result.map) return false
+    isRestoring = true
+    state = { ...state, ...result.map, selectedId: result.map.selectedId || null, selectedLinkId: null }
+    isRestoring = false
+    render()
+    syncPanels()
+    status('Loaded from D1')
+    return true
+  } catch (error) {
+    console.info('D1 load skipped:', error)
+    return false
+  }
+}
+
+async function saveCurrentMap() {
+  const serialized = serializeMap()
+  localStorage.setItem(STORAGE_KEY, serialized)
+
+  let cloudSaved = false
+  try {
+    await saveMapToD1(serialized)
+    cloudSaved = true
+  } catch (error) {
+    console.info('D1 save skipped/failed:', error)
+  }
+
+  try {
     const mode = await writeMapToDisk()
-    status(mode === 'disk' ? 'Saved to file on your PC' : 'Downloaded save file')
+    if (cloudSaved) {
+      status(mode === 'disk' ? 'Saved to D1 + PC file' : 'Saved to D1 + downloaded file')
+    } else {
+      status(mode === 'disk' ? 'Saved to PC file' : 'Downloaded save file')
+    }
   } catch (error) {
     if (error?.name === 'AbortError') {
-      status('File save cancelled')
+      status(cloudSaved ? 'Saved to D1' : 'File save cancelled')
       return
     }
     console.error(error)
-    localStorage.setItem(STORAGE_KEY, serializeMap())
     downloadMapFile()
-    status('Downloaded backup file')
+    status(cloudSaved ? 'Saved to D1 + backup downloaded' : 'Downloaded backup file')
   }
 }
 
@@ -1138,7 +1185,12 @@ function seedDemo() {
   focusNode(main)
 }
 
-bindEvents()
-seedDemo()
-render()
-syncPanels()
+async function initApp() {
+  bindEvents()
+  seedDemo()
+  render()
+  syncPanels()
+  await loadMapFromD1()
+}
+
+initApp()
