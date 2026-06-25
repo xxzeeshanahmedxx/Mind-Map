@@ -184,6 +184,28 @@
 
   .mini-node-button { width: 100%; border: 1px solid var(--notion-hairline); border-radius: 5px; background: var(--notion-surface); padding: 12px 16px; text-align: left; color: var(--notion-ink-secondary); font-size: 15px; line-height: 1.33; }
   .mini-node-button.active { border-color: var(--notion-primary); box-shadow: inset 3px 0 0 var(--notion-primary); }
+
+  .idea-card {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 10px;
+    align-items: start;
+    border: 1px solid var(--notion-hairline);
+    border-radius: 8px;
+    background: var(--notion-surface);
+    padding: 10px;
+    color: var(--notion-ink);
+    text-align: left;
+    transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+  }
+
+  .idea-card:hover { box-shadow: var(--shadow-soft); }
+  .idea-card.enabled { border-color: var(--notion-primary); box-shadow: inset 3px 0 0 var(--notion-primary); }
+  .idea-check { display: grid; height: 22px; width: 22px; place-items: center; border: 1px solid var(--notion-hairline); border-radius: 9999px; color: var(--notion-ink-faint); font-size: 12px; }
+  .idea-card.enabled .idea-check { border-color: var(--notion-primary); background: var(--notion-primary); color: white; }
+  .idea-title { font-size: 14px; font-weight: 600; line-height: 1.3; color: var(--notion-ink); }
+  .idea-meta { margin-top: 3px; font-size: 12px; line-height: 1.33; color: var(--notion-ink-muted); }
+
   .muted-copy { color: var(--notion-ink-muted); font-size: 14px; line-height: 1.43; }
 
   .thin-scroll::-webkit-scrollbar, .task-panel::-webkit-scrollbar { width: 10px; height: 10px; }

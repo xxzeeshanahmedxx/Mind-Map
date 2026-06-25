@@ -50,7 +50,115 @@ let state = {
   outline: '',
   search: '',
   theme: 'light',
+  featureIdeaSearch: '',
+  featureIdeaCategory: 'All',
+  activeFeatureIdeas: [],
 }
+
+const FEATURE_IDEAS = [
+  { id: 1, category: 'Canvas', title: 'Mini-map overview' },
+  { id: 2, category: 'Canvas', title: 'Snap to grid' },
+  { id: 3, category: 'Canvas', title: 'Infinite canvas mode' },
+  { id: 4, category: 'Canvas', title: 'Canvas rulers' },
+  { id: 5, category: 'Canvas', title: 'Presentation mode' },
+  { id: 6, category: 'Canvas', title: 'Focus mode' },
+  { id: 7, category: 'Canvas', title: 'Canvas templates' },
+  { id: 8, category: 'Canvas', title: 'Background patterns' },
+  { id: 9, category: 'Canvas', title: 'Zoom presets' },
+  { id: 10, category: 'Canvas', title: 'Section frames' },
+  { id: 11, category: 'Nodes', title: 'Node icons' },
+  { id: 12, category: 'Nodes', title: 'Node emojis' },
+  { id: 13, category: 'Nodes', title: 'Node checkboxes' },
+  { id: 14, category: 'Nodes', title: 'Node badges' },
+  { id: 15, category: 'Nodes', title: 'Node tags' },
+  { id: 16, category: 'Nodes', title: 'Node priority labels' },
+  { id: 17, category: 'Nodes', title: 'Node status chips' },
+  { id: 18, category: 'Nodes', title: 'Node comments' },
+  { id: 19, category: 'Nodes', title: 'Node attachments' },
+  { id: 20, category: 'Nodes', title: 'Node collapsible children' },
+  { id: 21, category: 'Nodes', title: 'Node progress bars' },
+  { id: 22, category: 'Nodes', title: 'Node due dates' },
+  { id: 23, category: 'Nodes', title: 'Node owners' },
+  { id: 24, category: 'Nodes', title: 'Node numbering' },
+  { id: 25, category: 'Nodes', title: 'Node lock/unlock' },
+  { id: 26, category: 'Nodes', title: 'Node pinning' },
+  { id: 27, category: 'Nodes', title: 'Node quick colors' },
+  { id: 28, category: 'Nodes', title: 'Node gradients' },
+  { id: 29, category: 'Nodes', title: 'Node image cover' },
+  { id: 30, category: 'Nodes', title: 'Node note preview' },
+  { id: 31, category: 'Formatting', title: 'Global font presets' },
+  { id: 32, category: 'Formatting', title: 'Theme presets' },
+  { id: 33, category: 'Formatting', title: 'Color palettes' },
+  { id: 34, category: 'Formatting', title: 'Line spacing control' },
+  { id: 35, category: 'Formatting', title: 'Letter spacing control' },
+  { id: 36, category: 'Formatting', title: 'Text case tools' },
+  { id: 37, category: 'Formatting', title: 'Markdown shortcuts' },
+  { id: 38, category: 'Formatting', title: 'Callout blocks' },
+  { id: 39, category: 'Formatting', title: 'Code-style nodes' },
+  { id: 40, category: 'Formatting', title: 'Quote-style nodes' },
+  { id: 41, category: 'Connectors', title: 'Arrow heads' },
+  { id: 42, category: 'Connectors', title: 'Connector labels' },
+  { id: 43, category: 'Connectors', title: 'Animated connectors' },
+  { id: 44, category: 'Connectors', title: 'Connector routing' },
+  { id: 45, category: 'Connectors', title: 'Relationship types' },
+  { id: 46, category: 'Connectors', title: 'Two-way links' },
+  { id: 47, category: 'Connectors', title: 'Connector notes' },
+  { id: 48, category: 'Connectors', title: 'Auto-connect suggestions' },
+  { id: 49, category: 'Connectors', title: 'Line jump style' },
+  { id: 50, category: 'Connectors', title: 'Connector opacity' },
+  { id: 51, category: 'Organization', title: 'Folders for maps' },
+  { id: 52, category: 'Organization', title: 'Map tabs' },
+  { id: 53, category: 'Organization', title: 'Favorites' },
+  { id: 54, category: 'Organization', title: 'Recent maps' },
+  { id: 55, category: 'Organization', title: 'Archive maps' },
+  { id: 56, category: 'Organization', title: 'Duplicate map' },
+  { id: 57, category: 'Organization', title: 'Map metadata' },
+  { id: 58, category: 'Organization', title: 'Map cover icon' },
+  { id: 59, category: 'Organization', title: 'Breadcrumb path' },
+  { id: 60, category: 'Organization', title: 'Workspace switcher' },
+  { id: 61, category: 'Productivity', title: 'Command palette' },
+  { id: 62, category: 'Productivity', title: 'Keyboard shortcut editor' },
+  { id: 63, category: 'Productivity', title: 'Quick add bar' },
+  { id: 64, category: 'Productivity', title: 'Timer mode' },
+  { id: 65, category: 'Productivity', title: 'Checklist mode' },
+  { id: 66, category: 'Productivity', title: 'Task extraction' },
+  { id: 67, category: 'Productivity', title: 'Agenda view' },
+  { id: 68, category: 'Productivity', title: 'Reading order' },
+  { id: 69, category: 'Productivity', title: 'Auto layout' },
+  { id: 70, category: 'Productivity', title: 'Distraction-free writing' },
+  { id: 71, category: 'Export', title: 'Export SVG' },
+  { id: 72, category: 'Export', title: 'Export PDF' },
+  { id: 73, category: 'Export', title: 'Export Markdown' },
+  { id: 74, category: 'Export', title: 'Export HTML' },
+  { id: 75, category: 'Export', title: 'Export outline text' },
+  { id: 76, category: 'Export', title: 'Copy as image' },
+  { id: 77, category: 'Export', title: 'Share preview mock' },
+  { id: 78, category: 'Export', title: 'Version history UI' },
+  { id: 79, category: 'Export', title: 'Backup reminder' },
+  { id: 80, category: 'Export', title: 'Import from outline file' },
+  { id: 81, category: 'View', title: 'Dark/light auto mode' },
+  { id: 82, category: 'View', title: 'High contrast mode' },
+  { id: 83, category: 'View', title: 'Compact mode' },
+  { id: 84, category: 'View', title: 'Large text mode' },
+  { id: 85, category: 'View', title: 'Grid density control' },
+  { id: 86, category: 'View', title: 'Hide toolbar mode' },
+  { id: 87, category: 'View', title: 'Node count stats' },
+  { id: 88, category: 'View', title: 'Search highlights' },
+  { id: 89, category: 'View', title: 'Filter by tag' },
+  { id: 90, category: 'View', title: 'Filter by status' },
+  { id: 91, category: 'AI/UI', title: 'AI explain button UI' },
+  { id: 92, category: 'AI/UI', title: 'AI summarize button UI' },
+  { id: 93, category: 'AI/UI', title: 'AI expand ideas UI' },
+  { id: 94, category: 'AI/UI', title: 'AI question generator UI' },
+  { id: 95, category: 'AI/UI', title: 'AI flashcards UI' },
+  { id: 96, category: 'AI/UI', title: 'AI outline cleaner UI' },
+  { id: 97, category: 'AI/UI', title: 'AI presentation script UI' },
+  { id: 98, category: 'AI/UI', title: 'AI examples UI' },
+  { id: 99, category: 'AI/UI', title: 'AI quiz UI' },
+  { id: 100, category: 'AI/UI', title: 'AI rewrite tone UI' }
+]
+
+const FEATURE_CATEGORIES = ['All', ...new Set(FEATURE_IDEAS.map((idea) => idea.category))]
 
 const history = []
 const future = []
@@ -106,6 +214,7 @@ app.innerHTML = `
         <button class="tool-btn task-toggle" data-panel="formatPanel">Format</button>
         <button class="tool-btn task-toggle" data-panel="linesPanel">Lines</button>
         <button class="tool-btn task-toggle" data-panel="outlinePanel">Outline</button>
+        <button class="tool-btn task-toggle" data-panel="ideasPanel">100 Ideas</button>
       </div>
       <div class="taskbar-divider"></div>
       <div class="taskbar-group">
@@ -199,6 +308,26 @@ app.innerHTML = `
       <textarea id="outline" class="textarea-input thin-scroll min-h-40" placeholder="Main topic\nFirst point\nSecond point\nExample\nConclusion"></textarea>
       <button id="outlineToNodes" class="tool-btn tool-btn-primary mt-3 w-full">Create From Outline</button>
       <p class="muted-copy mt-2">First line becomes the center. Remaining lines become connected ideas.</p>
+    </section>
+
+
+    <section id="ideasPanel" class="task-panel hidden no-print">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 class="panel-title">100 Things To Add</h2>
+          <p class="muted-copy">UI-only feature board. Search, filter, and toggle ideas as if they were enabled.</p>
+        </div>
+        <span id="ideasCount" class="zoom-pill">0 / 100 enabled</span>
+      </div>
+      <div class="mt-4 grid grid-cols-[1fr_180px] gap-3">
+        <input id="ideaSearch" class="form-input" placeholder="Search 100 ideas..." />
+        <select id="ideaCategory" class="form-input"></select>
+      </div>
+      <div class="mt-3 flex gap-2">
+        <button id="enableVisibleIdeas" class="tool-btn">Enable visible</button>
+        <button id="resetIdeas" class="tool-btn">Reset</button>
+      </div>
+      <div id="ideasList" class="thin-scroll mt-4 grid max-h-[48vh] grid-cols-2 gap-2 overflow-y-auto pr-1"></div>
     </section>
 
     <section id="shortcutsPanel" class="task-panel narrow right hidden no-print">
@@ -379,6 +508,7 @@ function render() {
   drawLinks()
   drawNodes()
   drawNodeList()
+  renderFeatureIdeas()
 }
 
 function drawNodes() {
@@ -494,6 +624,57 @@ function drawNodeList() {
       syncPanels()
     })
     els.nodeList.appendChild(item)
+  })
+}
+
+
+function renderFeatureIdeas() {
+  const list = $('#ideasList')
+  const category = $('#ideaCategory')
+  const search = $('#ideaSearch')
+  const count = $('#ideasCount')
+  if (!list || !category || !search || !count) return
+
+  state.activeFeatureIdeas ||= []
+  state.featureIdeaSearch ||= ''
+  state.featureIdeaCategory ||= 'All'
+
+  if (!category.dataset.ready) {
+    category.innerHTML = FEATURE_CATEGORIES.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('')
+    category.dataset.ready = 'true'
+  }
+
+  search.value = state.featureIdeaSearch
+  category.value = state.featureIdeaCategory
+
+  const query = state.featureIdeaSearch.trim().toLowerCase()
+  const filtered = FEATURE_IDEAS.filter((idea) => {
+    const matchesCategory = state.featureIdeaCategory === 'All' || idea.category === state.featureIdeaCategory
+    const matchesSearch = !query || `${idea.title} ${idea.category}`.toLowerCase().includes(query)
+    return matchesCategory && matchesSearch
+  })
+
+  count.textContent = `${state.activeFeatureIdeas.length} / ${FEATURE_IDEAS.length} enabled`
+  list.innerHTML = ''
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="mini-node-button">No ideas match your search.</div>'
+    return
+  }
+
+  filtered.forEach((idea) => {
+    const enabled = state.activeFeatureIdeas.includes(idea.id)
+    const button = document.createElement('button')
+    button.className = `idea-card ${enabled ? 'enabled' : ''}`
+    button.dataset.ideaId = idea.id
+    button.innerHTML = `
+      <span class="idea-check">${enabled ? '✓' : idea.id}</span>
+      <span>
+        <span class="idea-title">${escapeHtml(idea.title)}</span>
+        <span class="idea-meta">${escapeHtml(idea.category)} · UI toggle only</span>
+      </span>
+    `
+    list.appendChild(button)
   })
 }
 
@@ -730,6 +911,44 @@ function bindEvents() {
     render()
     syncPanels()
     status(`${nextTheme === 'dark' ? 'Dark' : 'Light'} mode`)
+  })
+
+  $('#ideaSearch').addEventListener('input', (event) => {
+    state.featureIdeaSearch = event.target.value
+    renderFeatureIdeas()
+  })
+
+  $('#ideaCategory').addEventListener('change', (event) => {
+    state.featureIdeaCategory = event.target.value
+    renderFeatureIdeas()
+  })
+
+  $('#ideasList').addEventListener('click', (event) => {
+    const card = event.target.closest('.idea-card')
+    if (!card) return
+    const id = Number(card.dataset.ideaId)
+    state.activeFeatureIdeas ||= []
+    if (state.activeFeatureIdeas.includes(id)) {
+      state.activeFeatureIdeas = state.activeFeatureIdeas.filter((item) => item !== id)
+      status('UI idea disabled')
+    } else {
+      state.activeFeatureIdeas.push(id)
+      status('UI idea enabled')
+    }
+    renderFeatureIdeas()
+  })
+
+  $('#enableVisibleIdeas').addEventListener('click', () => {
+    const visibleIds = $$('.idea-card', $('#ideasList')).map((card) => Number(card.dataset.ideaId))
+    state.activeFeatureIdeas = [...new Set([...(state.activeFeatureIdeas || []), ...visibleIds])]
+    renderFeatureIdeas()
+    status('Visible ideas enabled')
+  })
+
+  $('#resetIdeas').addEventListener('click', () => {
+    state.activeFeatureIdeas = []
+    renderFeatureIdeas()
+    status('Idea toggles reset')
   })
 
   $('#addNode').addEventListener('click', () => {
