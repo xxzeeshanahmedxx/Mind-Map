@@ -135,6 +135,7 @@ const future = []
 let isRestoring = false
 let dragState = null
 let panState = null
+let suppressNextNodeClick = false
 
 const uid = (prefix = 'id') => `${prefix}_${Math.random().toString(36).slice(2, 10)}`
 const clone = (value) => JSON.parse(JSON.stringify(value))
@@ -167,9 +168,6 @@ app.innerHTML = `
     </header>
 
     <main id="viewport" class="canvas-shell">
-      <div class="canvas-tip no-print">
-        <b style="color:var(--notion-ink)">Controls:</b> drag canvas to pan · wheel to zoom · double-click node to edit · taskbar holds all tools
-      </div>
       <div id="world" class="canvas-grid absolute left-0 top-0" style="width:${WORLD_WIDTH}px;height:${WORLD_HEIGHT}px;">
         <svg id="links" class="absolute inset-0 overflow-visible" width="${WORLD_WIDTH}" height="${WORLD_HEIGHT}"></svg>
         <div id="nodesLayer" class="absolute inset-0"></div>
@@ -516,17 +514,15 @@ function drawNodes() {
     div.addEventListener('mousedown', startNodeDrag)
     div.addEventListener('click', (event) => {
       event.stopPropagation()
+      if (suppressNextNodeClick) return
       if (state.connectMode) {
         handleConnectClick(node.id)
         return
       }
       state.selectedId = node.id
       state.selectedLinkId = null
-      render()
+      $$('.node-card').forEach((card) => card.classList.toggle('selected', card.dataset.id === node.id))
       syncPanels()
-    })
-    div.addEventListener('dblclick', (event) => {
-      event.stopPropagation()
       startInlineEdit(div, inner, node)
     })
     fragment.appendChild(div)
@@ -685,8 +681,15 @@ function startNodeDrag(event) {
   const point = worldPointFromEvent(event)
   state.selectedId = node.id
   state.selectedLinkId = null
-  dragState = { id: node.id, offsetX: point.x - node.x, offsetY: point.y - node.y }
-  render()
+  dragState = {
+    id: node.id,
+    offsetX: point.x - node.x,
+    offsetY: point.y - node.y,
+    startX: event.clientX,
+    startY: event.clientY,
+    moved: false,
+  }
+  $$('.node-card').forEach((card) => card.classList.toggle('selected', card.dataset.id === node.id))
   syncPanels()
   document.addEventListener('mousemove', moveNode)
   document.addEventListener('mouseup', stopNodeDrag)
@@ -696,6 +699,9 @@ function moveNode(event) {
   if (!dragState) return
   const node = state.nodes.find((item) => item.id === dragState.id)
   if (!node) return
+  if (Math.abs(event.clientX - dragState.startX) > 3 || Math.abs(event.clientY - dragState.startY) > 3) {
+    dragState.moved = true
+  }
   const point = worldPointFromEvent(event)
   node.x = Math.round(point.x - dragState.offsetX)
   node.y = Math.round(point.y - dragState.offsetY)
@@ -703,6 +709,12 @@ function moveNode(event) {
 }
 
 function stopNodeDrag() {
+  if (dragState?.moved) {
+    suppressNextNodeClick = true
+    window.setTimeout(() => {
+      suppressNextNodeClick = false
+    }, 0)
+  }
   dragState = null
   document.removeEventListener('mousemove', moveNode)
   document.removeEventListener('mouseup', stopNodeDrag)
@@ -1038,7 +1050,7 @@ function bindEvents() {
   })
 
   els.viewport.addEventListener('mousedown', (event) => {
-    if (event.target !== els.viewport && event.target !== els.world) return
+    if (event.target.closest?.('.node-card')) return
     state.selectedId = null
     syncPanels()
     render()
