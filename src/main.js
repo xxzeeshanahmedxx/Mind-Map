@@ -55,110 +55,80 @@ let state = {
   activeFeatureIdeas: [],
 }
 
-const FEATURE_IDEAS = [
-  { id: 1, category: 'Canvas', title: 'Mini-map overview' },
-  { id: 2, category: 'Canvas', title: 'Snap to grid' },
-  { id: 3, category: 'Canvas', title: 'Infinite canvas mode' },
-  { id: 4, category: 'Canvas', title: 'Canvas rulers' },
-  { id: 5, category: 'Canvas', title: 'Presentation mode' },
-  { id: 6, category: 'Canvas', title: 'Focus mode' },
-  { id: 7, category: 'Canvas', title: 'Canvas templates' },
-  { id: 8, category: 'Canvas', title: 'Background patterns' },
-  { id: 9, category: 'Canvas', title: 'Zoom presets' },
-  { id: 10, category: 'Canvas', title: 'Section frames' },
-  { id: 11, category: 'Nodes', title: 'Node icons' },
-  { id: 12, category: 'Nodes', title: 'Node emojis' },
-  { id: 13, category: 'Nodes', title: 'Node checkboxes' },
-  { id: 14, category: 'Nodes', title: 'Node badges' },
-  { id: 15, category: 'Nodes', title: 'Node tags' },
-  { id: 16, category: 'Nodes', title: 'Node priority labels' },
-  { id: 17, category: 'Nodes', title: 'Node status chips' },
-  { id: 18, category: 'Nodes', title: 'Node comments' },
-  { id: 19, category: 'Nodes', title: 'Node attachments' },
-  { id: 20, category: 'Nodes', title: 'Node collapsible children' },
-  { id: 21, category: 'Nodes', title: 'Node progress bars' },
-  { id: 22, category: 'Nodes', title: 'Node due dates' },
-  { id: 23, category: 'Nodes', title: 'Node owners' },
-  { id: 24, category: 'Nodes', title: 'Node numbering' },
-  { id: 25, category: 'Nodes', title: 'Node lock/unlock' },
-  { id: 26, category: 'Nodes', title: 'Node pinning' },
-  { id: 27, category: 'Nodes', title: 'Node quick colors' },
-  { id: 28, category: 'Nodes', title: 'Node gradients' },
-  { id: 29, category: 'Nodes', title: 'Node image cover' },
-  { id: 30, category: 'Nodes', title: 'Node note preview' },
-  { id: 31, category: 'Formatting', title: 'Global font presets' },
-  { id: 32, category: 'Formatting', title: 'Theme presets' },
-  { id: 33, category: 'Formatting', title: 'Color palettes' },
-  { id: 34, category: 'Formatting', title: 'Line spacing control' },
-  { id: 35, category: 'Formatting', title: 'Letter spacing control' },
-  { id: 36, category: 'Formatting', title: 'Text case tools' },
-  { id: 37, category: 'Formatting', title: 'Markdown shortcuts' },
-  { id: 38, category: 'Formatting', title: 'Callout blocks' },
-  { id: 39, category: 'Formatting', title: 'Code-style nodes' },
-  { id: 40, category: 'Formatting', title: 'Quote-style nodes' },
-  { id: 41, category: 'Connectors', title: 'Arrow heads' },
-  { id: 42, category: 'Connectors', title: 'Connector labels' },
-  { id: 43, category: 'Connectors', title: 'Animated connectors' },
-  { id: 44, category: 'Connectors', title: 'Connector routing' },
-  { id: 45, category: 'Connectors', title: 'Relationship types' },
-  { id: 46, category: 'Connectors', title: 'Two-way links' },
-  { id: 47, category: 'Connectors', title: 'Connector notes' },
-  { id: 48, category: 'Connectors', title: 'Auto-connect suggestions' },
-  { id: 49, category: 'Connectors', title: 'Line jump style' },
-  { id: 50, category: 'Connectors', title: 'Connector opacity' },
-  { id: 51, category: 'Organization', title: 'Folders for maps' },
-  { id: 52, category: 'Organization', title: 'Map tabs' },
-  { id: 53, category: 'Organization', title: 'Favorites' },
-  { id: 54, category: 'Organization', title: 'Recent maps' },
-  { id: 55, category: 'Organization', title: 'Archive maps' },
-  { id: 56, category: 'Organization', title: 'Duplicate map' },
-  { id: 57, category: 'Organization', title: 'Map metadata' },
-  { id: 58, category: 'Organization', title: 'Map cover icon' },
-  { id: 59, category: 'Organization', title: 'Breadcrumb path' },
-  { id: 60, category: 'Organization', title: 'Workspace switcher' },
-  { id: 61, category: 'Productivity', title: 'Command palette' },
-  { id: 62, category: 'Productivity', title: 'Keyboard shortcut editor' },
-  { id: 63, category: 'Productivity', title: 'Quick add bar' },
-  { id: 64, category: 'Productivity', title: 'Timer mode' },
-  { id: 65, category: 'Productivity', title: 'Checklist mode' },
-  { id: 66, category: 'Productivity', title: 'Task extraction' },
-  { id: 67, category: 'Productivity', title: 'Agenda view' },
-  { id: 68, category: 'Productivity', title: 'Reading order' },
-  { id: 69, category: 'Productivity', title: 'Auto layout' },
-  { id: 70, category: 'Productivity', title: 'Distraction-free writing' },
-  { id: 71, category: 'Export', title: 'Export SVG' },
-  { id: 72, category: 'Export', title: 'Export PDF' },
-  { id: 73, category: 'Export', title: 'Export Markdown' },
-  { id: 74, category: 'Export', title: 'Export HTML' },
-  { id: 75, category: 'Export', title: 'Export outline text' },
-  { id: 76, category: 'Export', title: 'Copy as image' },
-  { id: 77, category: 'Export', title: 'Share preview mock' },
-  { id: 78, category: 'Export', title: 'Version history UI' },
-  { id: 79, category: 'Export', title: 'Backup reminder' },
-  { id: 80, category: 'Export', title: 'Import from outline file' },
-  { id: 81, category: 'View', title: 'Dark/light auto mode' },
-  { id: 82, category: 'View', title: 'High contrast mode' },
-  { id: 83, category: 'View', title: 'Compact mode' },
-  { id: 84, category: 'View', title: 'Large text mode' },
-  { id: 85, category: 'View', title: 'Grid density control' },
-  { id: 86, category: 'View', title: 'Hide toolbar mode' },
-  { id: 87, category: 'View', title: 'Node count stats' },
-  { id: 88, category: 'View', title: 'Search highlights' },
-  { id: 89, category: 'View', title: 'Filter by tag' },
-  { id: 90, category: 'View', title: 'Filter by status' },
-  { id: 91, category: 'AI/UI', title: 'AI explain button UI' },
-  { id: 92, category: 'AI/UI', title: 'AI summarize button UI' },
-  { id: 93, category: 'AI/UI', title: 'AI expand ideas UI' },
-  { id: 94, category: 'AI/UI', title: 'AI question generator UI' },
-  { id: 95, category: 'AI/UI', title: 'AI flashcards UI' },
-  { id: 96, category: 'AI/UI', title: 'AI outline cleaner UI' },
-  { id: 97, category: 'AI/UI', title: 'AI presentation script UI' },
-  { id: 98, category: 'AI/UI', title: 'AI examples UI' },
-  { id: 99, category: 'AI/UI', title: 'AI quiz UI' },
-  { id: 100, category: 'AI/UI', title: 'AI rewrite tone UI' }
+const FEATURE_BLUEPRINTS = [
+  {
+    category: 'Canvas and workspace',
+    start: 1,
+    qualities: ['Full-screen', 'Centered', 'Infinite-feel', 'Soft', 'Plain', 'Generous', 'Fixed', 'Subtle', 'Collapsible', 'Clean'],
+    topics: ['workspace', 'root node', 'canvas background', 'grid option', 'empty margin', 'top bar', 'status bar', 'panel space', 'edge fade', 'map title area'],
+  },
+  {
+    category: 'Node appearance',
+    start: 101,
+    qualities: ['Rounded', 'Pill-shaped', 'Soft-corner', 'Shadowed', 'Bordered', 'Borderless', 'Larger root', 'Compact child', 'Roomy', 'Resizable'],
+    topics: ['node style', 'node option', 'square node', 'selected node state', 'node border', 'flat node preset', 'root node preset', 'child node preset', 'node padding', 'node handle'],
+  },
+  {
+    category: 'Text and content',
+    start: 201,
+    qualities: ['Crisp', 'Readable', 'Scalable', 'Bold', 'Medium-weight', 'Regular-weight', 'Markdown-lite', 'Plain-text', 'Multiline', 'Copy-friendly'],
+    topics: ['sans-serif text', 'base font size', 'text scale', 'root title', 'child title', 'body text', 'styling option', 'default mode', 'node content', 'selection behavior'],
+  },
+  {
+    category: 'Lines and relationships',
+    start: 301,
+    qualities: ['Curved', 'Straight', 'Elbow', 'Thicker root', 'Thinner child', 'Soft-color', 'Monochrome', 'Arrow-free', 'Label-ready', 'Hover-highlighted'],
+    topics: ['connector line', 'connector option', 'branch option', 'root connector', 'child connector', 'relationship color', 'line style', 'default direction', 'relationship label', 'path state'],
+  },
+  {
+    category: 'Navigation and viewport',
+    start: 401,
+    qualities: ['Wheel', 'Pinch', 'Button-based', 'Fit-to-map', 'Fit-to-selection', 'Center-root', 'Percentage', 'Cursor-focused', 'Space-drag', 'Mini-map'],
+    topics: ['zoom control', 'gesture zoom', 'zoom buttons', 'view action', 'selection view', 'root navigation', 'zoom display', 'zoom behavior', 'pan shortcut', 'navigator'],
+  },
+  {
+    category: 'Selection and editing',
+    start: 501,
+    qualities: ['Single-click', 'Shift-click', 'Drag-box', 'Lasso', 'Clear-outline', 'Count-badge', 'Contextual', 'Multi-select', 'Background-click', 'Escape-key'],
+    topics: ['selection', 'multi-select', 'selection region', 'selection option', 'selection state', 'selection feedback', 'selected-node toolbar', 'bulk toolbar', 'deselect action', 'cancel action'],
+  },
+  {
+    category: 'Menus and toolbars',
+    start: 601,
+    qualities: ['Slim', 'Icon-labeled', 'Core-only', 'Overflow', 'Quick-add', 'Searchable', 'Undoable', 'Docked', 'Theme-aware', 'Minimal'],
+    topics: ['toolbar', 'button style', 'default actions', 'extras menu', 'add menu', 'search UI', 'history controls', 'navigation cluster', 'theme toggle', 'settings surface'],
+  },
+  {
+    category: 'Visual style and theme',
+    start: 701,
+    qualities: ['Cool', 'Modern-flat', 'Soft-shadow', 'Muted-color', 'Single-accent', 'Custom-accent', 'Polished-dark', 'Polished-light', 'System-aware', 'High-contrast'],
+    topics: ['aesthetic', 'design base', 'elevation', 'color system', 'primary color', 'accent option', 'dark mode', 'light mode', 'theme mode', 'accessibility theme'],
+  },
+  {
+    category: 'Feedback and accessibility',
+    start: 801,
+    qualities: ['Visible', 'Focused', 'Dragged', 'Drop-target', 'Autosave', 'Saved', 'Offline', 'Retryable', 'Plain-language', 'Brief-success'],
+    topics: ['hover feedback', 'focus feedback', 'drag feedback', 'drop feedback', 'status text', 'save checkmark', 'connection badge', 'failure action', 'error message', 'success toast'],
+  },
+  {
+    category: 'Personal and responsive',
+    start: 901,
+    qualities: ['Welcome', 'Personal', 'Life-template', 'Work-template', 'Idea-template', 'Daily', 'Project-planning', 'Learning-notes', 'Thought-web', 'Responsive'],
+    topics: ['start screen', 'map template', 'starter card', 'starter card', 'starter card', 'brain-dump card', 'template card', 'template card', 'template card', 'layout behavior'],
+  },
 ]
 
-const FEATURE_CATEGORIES = ['All', ...new Set(FEATURE_IDEAS.map((idea) => idea.category))]
+const FEATURE_IDEAS = FEATURE_BLUEPRINTS.flatMap((section) =>
+  section.topics.flatMap((topic, topicIndex) =>
+    section.qualities.map((quality, qualityIndex) => ({
+      id: section.start + topicIndex * 10 + qualityIndex,
+      category: section.category,
+      title: `${quality} ${topic}`,
+    })),
+  ),
+)
+
+const FEATURE_CATEGORIES = ['All', ...FEATURE_BLUEPRINTS.map((section) => section.category)]
 
 const history = []
 const future = []
@@ -214,7 +184,7 @@ app.innerHTML = `
         <button class="tool-btn task-toggle" data-panel="formatPanel">Format</button>
         <button class="tool-btn task-toggle" data-panel="linesPanel">Lines</button>
         <button class="tool-btn task-toggle" data-panel="outlinePanel">Outline</button>
-        <button class="tool-btn task-toggle" data-panel="ideasPanel">100 Ideas</button>
+        <button class="tool-btn task-toggle" data-panel="ideasPanel">1000 Ideas</button>
       </div>
       <div class="taskbar-divider"></div>
       <div class="taskbar-group">
@@ -314,13 +284,13 @@ app.innerHTML = `
     <section id="ideasPanel" class="task-panel hidden no-print">
       <div class="flex items-start justify-between gap-4">
         <div>
-          <h2 class="panel-title">100 Things To Add</h2>
-          <p class="muted-copy">UI-only feature board. Search, filter, and toggle ideas as if they were enabled.</p>
+          <h2 class="panel-title">1000 UI Ideas</h2>
+          <p class="muted-copy">UI-only roadmap board generated from your 1000-item list. Search, filter, and toggle ideas as if they were enabled.</p>
         </div>
         <span id="ideasCount" class="zoom-pill">0 / 100 enabled</span>
       </div>
       <div class="mt-4 grid grid-cols-[1fr_180px] gap-3">
-        <input id="ideaSearch" class="form-input" placeholder="Search 100 ideas..." />
+        <input id="ideaSearch" class="form-input" placeholder="Search 1000 ideas..." />
         <select id="ideaCategory" class="form-input"></select>
       </div>
       <div class="mt-3 flex gap-2">
