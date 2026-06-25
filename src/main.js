@@ -11,7 +11,7 @@ const defaultNode = {
   h: 52,
   text: 'New idea',
   fill: '#ffffff',
-  color: '#0f172a',
+  color: '#000000',
   border: '#e6e6e6',
   font: 'Inter',
   size: 15,
@@ -49,6 +49,7 @@ let state = {
   },
   outline: '',
   search: '',
+  theme: 'light',
 }
 
 const history = []
@@ -70,14 +71,14 @@ app.innerHTML = `
         <div class="brand-mark">✦</div>
         <div>
           <h1 class="brand-title">Mind Map Canvas</h1>
-          <p class="brand-subtitle">Private workspace</p>
+          <p class="brand-subtitle">Notion-style private workspace</p>
         </div>
       </div>
       <button id="addNode" class="tool-btn tool-btn-primary">+ Node</button>
       <button id="addChild" class="tool-btn">+ Child</button>
       <button id="connectMode" class="tool-btn">Connect</button>
       <button id="duplicateNode" class="tool-btn">Duplicate</button>
-      <button id="deleteNode" class="tool-btn tool-btn-danger">Delete</button>
+      <button id="deleteNode" class="tool-btn">Delete</button>
       <button id="undoBtn" class="tool-btn">Undo</button>
       <button id="redoBtn" class="tool-btn">Redo</button>
       <button id="fitBtn" class="tool-btn">Fit</button>
@@ -87,118 +88,129 @@ app.innerHTML = `
       </div>
     </header>
 
-    <div class="workspace-grid">
-      <aside class="sidebar sidebar-left sidebar-scroll no-print">
-        <section class="panel">
-          <h2 class="panel-title">Project</h2>
-          <div class="grid grid-cols-2 gap-2">
-            <button id="saveLocal" class="tool-btn">Save</button>
-            <button id="loadLocal" class="tool-btn">Load</button>
-            <button id="exportJson" class="tool-btn">Export</button>
-            <button id="importJsonButton" class="tool-btn">Import</button>
-            <button id="clearMap" class="tool-btn">Clear</button>
-            <button id="printMap" class="tool-btn">Print</button>
-          </div>
-          <input id="importJson" class="hidden" type="file" accept="application/json" />
-          <p class="muted-copy mt-3">Everything stays local in your browser. Export JSON for a backup.</p>
-        </section>
+    <main id="viewport" class="canvas-shell">
+      <div class="canvas-tip no-print">
+        <b style="color:var(--notion-ink)">Controls:</b> drag canvas to pan · wheel to zoom · double-click node to edit · taskbar holds all tools
+      </div>
+      <div id="world" class="canvas-grid absolute left-0 top-0" style="width:${WORLD_WIDTH}px;height:${WORLD_HEIGHT}px;">
+        <svg id="links" class="absolute inset-0 overflow-visible" width="${WORLD_WIDTH}" height="${WORLD_HEIGHT}"></svg>
+        <div id="nodesLayer" class="absolute inset-0"></div>
+      </div>
+    </main>
 
-        <section class="panel">
-          <h2 class="panel-title">Canvas</h2>
-          <div class="grid grid-cols-2 gap-3">
-            <label><span class="form-label">Color</span><input id="canvasColor" type="color" class="color-input" /></label>
-            <label class="flex items-end gap-2 pb-1"><input id="gridToggle" type="checkbox" class="h-5 w-5 accent-[#0075de]" /> <span class="form-label">Grid</span></label>
-          </div>
-          <div class="mt-3 grid grid-cols-3 gap-2">
-            <button id="zoomOut" class="tool-btn">−</button>
-            <button id="zoomReset" class="tool-btn">100%</button>
-            <button id="zoomIn" class="tool-btn">+</button>
-          </div>
-        </section>
+    <footer class="taskbar no-print">
+      <div class="taskbar-group">
+        <button class="tool-btn task-toggle" data-panel="projectPanel">Project</button>
+        <button class="tool-btn task-toggle" data-panel="canvasPanel">Canvas</button>
+        <button class="tool-btn task-toggle" data-panel="nodesPanel">Nodes</button>
+        <button class="tool-btn task-toggle" data-panel="formatPanel">Format</button>
+        <button class="tool-btn task-toggle" data-panel="linesPanel">Lines</button>
+        <button class="tool-btn task-toggle" data-panel="outlinePanel">Outline</button>
+      </div>
+      <div class="taskbar-divider"></div>
+      <div class="taskbar-group">
+        <button id="zoomOut" class="tool-btn">−</button>
+        <button id="zoomReset" class="tool-btn">100%</button>
+        <button id="zoomIn" class="tool-btn">+</button>
+      </div>
+      <div class="ml-auto taskbar-group">
+        <button id="themeToggle" class="tool-btn">Dark mode</button>
+        <button class="tool-btn task-toggle" data-panel="shortcutsPanel">Shortcuts</button>
+      </div>
+    </footer>
 
-        <section class="panel">
-          <h2 class="panel-title">Search Nodes</h2>
-          <input id="searchInput" class="form-input" placeholder="Search ideas..." />
-          <div id="nodeList" class="thin-scroll mt-3 flex max-h-72 flex-col gap-2 overflow-y-auto pr-1"></div>
-        </section>
+    <section id="projectPanel" class="task-panel narrow hidden no-print">
+      <h2 class="panel-title">Project</h2>
+      <div class="grid grid-cols-2 gap-2">
+        <button id="saveLocal" class="tool-btn">Save</button>
+        <button id="loadLocal" class="tool-btn">Load</button>
+        <button id="exportJson" class="tool-btn">Export JSON</button>
+        <button id="importJsonButton" class="tool-btn">Import JSON</button>
+        <button id="clearMap" class="tool-btn">Clear Map</button>
+        <button id="printMap" class="tool-btn">Print</button>
+      </div>
+      <input id="importJson" class="hidden" type="file" accept="application/json" />
+      <p class="muted-copy mt-3">Local-first. Save in this browser or export JSON as a backup.</p>
+    </section>
 
-        <section class="panel">
-          <h2 class="panel-title">Outline to Mind Map</h2>
-          <textarea id="outline" class="textarea-input thin-scroll min-h-32" placeholder="Main topic\nFirst point\nSecond point\nExample\nConclusion"></textarea>
-          <button id="outlineToNodes" class="tool-btn tool-btn-primary mt-3 w-full">Create From Outline</button>
-          <p class="muted-copy mt-2">First line becomes the center. Remaining lines become connected ideas.</p>
-        </section>
-      </aside>
+    <section id="canvasPanel" class="task-panel narrow hidden no-print">
+      <h2 class="panel-title">Canvas</h2>
+      <div class="grid grid-cols-2 gap-3">
+        <label><span class="form-label">Canvas color</span><input id="canvasColor" type="color" class="color-input" /></label>
+        <label class="flex items-end gap-2 pb-1"><input id="gridToggle" type="checkbox" class="h-5 w-5 accent-[#0075de]" /> <span class="form-label">Grid</span></label>
+      </div>
+      <p class="muted-copy mt-3">Dark mode changes the app chrome. You can still choose any canvas color.</p>
+    </section>
 
-      <main id="viewport" class="canvas-shell">
-        <div class="canvas-tip no-print">
-          <b style="color:var(--notion-ink)">Controls:</b> drag canvas to pan · wheel to zoom · double-click node to edit · Delete removes selected
+    <section id="nodesPanel" class="task-panel medium hidden no-print">
+      <h2 class="panel-title">Nodes</h2>
+      <input id="searchInput" class="form-input" placeholder="Search ideas..." />
+      <div id="nodeList" class="thin-scroll mt-3 flex max-h-80 flex-col gap-2 overflow-y-auto pr-1"></div>
+    </section>
+
+    <section id="formatPanel" class="task-panel right hidden no-print">
+      <h2 class="panel-title">Node Formatting</h2>
+      <div id="noSelection" class="rounded-lg p-4 muted-copy">Select a node to edit.</div>
+      <div id="nodePanel" class="hidden space-y-4">
+        <label><span class="form-label">Text</span><textarea id="nodeText" class="textarea-input thin-scroll min-h-20"></textarea></label>
+        <div class="grid grid-cols-3 gap-3">
+          <label><span class="form-label">Text</span><input id="textColor" type="color" class="color-input" /></label>
+          <label><span class="form-label">Fill</span><input id="fillColor" type="color" class="color-input" /></label>
+          <label><span class="form-label">Border</span><input id="borderColor" type="color" class="color-input" /></label>
         </div>
-        <div id="world" class="canvas-grid absolute left-0 top-0" style="width:${WORLD_WIDTH}px;height:${WORLD_HEIGHT}px;">
-          <svg id="links" class="absolute inset-0 overflow-visible" width="${WORLD_WIDTH}" height="${WORLD_HEIGHT}"></svg>
-          <div id="nodesLayer" class="absolute inset-0"></div>
+        <div class="grid grid-cols-2 gap-3">
+          <label><span class="form-label">Font</span><select id="fontFamily" class="form-input"><option>Inter</option><option>Arial</option><option>Verdana</option><option>Georgia</option><option>Times New Roman</option><option>Courier New</option><option>Trebuchet MS</option><option>Impact</option></select></label>
+          <label><span class="form-label">Size</span><input id="fontSize" type="number" min="8" max="96" class="form-input" /></label>
         </div>
-      </main>
+        <div class="grid grid-cols-3 gap-2">
+          <button id="boldBtn" class="tool-btn">Bold</button>
+          <button id="italicBtn" class="tool-btn">Italic</button>
+          <button id="underlineBtn" class="tool-btn">Underline</button>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <label><span class="form-label">Align</span><select id="align" class="form-input"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></label>
+          <label><span class="form-label">Shape</span><select id="shape" class="form-input"><option value="rounded">Rounded</option><option value="rect">Rectangle</option><option value="ellipse">Ellipse</option><option value="diamond">Diamond</option></select></label>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <label><span class="form-label">Width</span><input id="nodeW" type="number" min="40" max="900" class="form-input" /></label>
+          <label><span class="form-label">Height</span><input id="nodeH" type="number" min="30" max="700" class="form-input" /></label>
+          <label><span class="form-label">Border</span><input id="borderW" type="number" min="0" max="24" class="form-input" /></label>
+          <label><span class="form-label">Radius</span><input id="radius" type="number" min="0" max="120" class="form-input" /></label>
+          <label><span class="form-label">Opacity %</span><input id="opacity" type="number" min="10" max="100" class="form-input" /></label>
+          <label><span class="form-label">Padding</span><input id="padding" type="number" min="0" max="80" class="form-input" /></label>
+        </div>
+        <label class="flex items-center gap-2"><input id="shadowToggle" type="checkbox" class="h-5 w-5 accent-[#0075de]" /><span class="form-label">Soft shadow</span></label>
+      </div>
+    </section>
 
-      <aside class="sidebar sidebar-right sidebar-scroll no-print">
-        <section class="panel">
-          <h2 class="panel-title">Node Formatting</h2>
-          <div id="noSelection" class="rounded-lg border border-dashed border-[#e6e6e6] p-4 muted-copy">Select a node to edit.</div>
-          <div id="nodePanel" class="hidden space-y-4">
-            <label><span class="form-label">Text</span><textarea id="nodeText" class="textarea-input thin-scroll min-h-20"></textarea></label>
-            <div class="grid grid-cols-3 gap-3">
-              <label><span class="form-label">Text</span><input id="textColor" type="color" class="color-input" /></label>
-              <label><span class="form-label">Fill</span><input id="fillColor" type="color" class="color-input" /></label>
-              <label><span class="form-label">Border</span><input id="borderColor" type="color" class="color-input" /></label>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <label><span class="form-label">Font</span><select id="fontFamily" class="form-input"><option>Inter</option><option>Arial</option><option>Verdana</option><option>Georgia</option><option>Times New Roman</option><option>Courier New</option><option>Trebuchet MS</option><option>Impact</option></select></label>
-              <label><span class="form-label">Size</span><input id="fontSize" type="number" min="8" max="96" class="form-input" /></label>
-            </div>
-            <div class="grid grid-cols-3 gap-2">
-              <button id="boldBtn" class="tool-btn">Bold</button>
-              <button id="italicBtn" class="tool-btn">Italic</button>
-              <button id="underlineBtn" class="tool-btn">Underline</button>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <label><span class="form-label">Align</span><select id="align" class="form-input"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></label>
-              <label><span class="form-label">Shape</span><select id="shape" class="form-input"><option value="rounded">Rounded</option><option value="rect">Rectangle</option><option value="ellipse">Ellipse</option><option value="diamond">Diamond</option></select></label>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <label><span class="form-label">Width</span><input id="nodeW" type="number" min="40" max="900" class="form-input" /></label>
-              <label><span class="form-label">Height</span><input id="nodeH" type="number" min="30" max="700" class="form-input" /></label>
-              <label><span class="form-label">Border</span><input id="borderW" type="number" min="0" max="24" class="form-input" /></label>
-              <label><span class="form-label">Radius</span><input id="radius" type="number" min="0" max="120" class="form-input" /></label>
-              <label><span class="form-label">Opacity %</span><input id="opacity" type="number" min="10" max="100" class="form-input" /></label>
-              <label><span class="form-label">Padding</span><input id="padding" type="number" min="0" max="80" class="form-input" /></label>
-            </div>
-            <label class="flex items-center gap-2"><input id="shadowToggle" type="checkbox" class="h-5 w-5 accent-[#0075de]" /><span class="form-label">Soft shadow</span></label>
-          </div>
-        </section>
+    <section id="linesPanel" class="task-panel narrow right hidden no-print">
+      <h2 class="panel-title">Connector Formatting</h2>
+      <div class="grid grid-cols-2 gap-3">
+        <label><span class="form-label">Color</span><input id="lineColor" type="color" class="color-input" /></label>
+        <label><span class="form-label">Thickness</span><input id="lineWidth" type="number" min="1" max="20" class="form-input" /></label>
+        <label><span class="form-label">Type</span><select id="lineType" class="form-input"><option value="curve">Curved</option><option value="straight">Straight</option><option value="elbow">Elbow</option></select></label>
+        <label class="flex items-end gap-2 pb-1"><input id="lineDash" type="checkbox" class="h-5 w-5 accent-[#0075de]" /> <span class="form-label">Dashed</span></label>
+      </div>
+      <button id="applyLineAll" class="tool-btn mt-3 w-full">Apply to All Lines</button>
+    </section>
 
-        <section class="panel">
-          <h2 class="panel-title">Connector Formatting</h2>
-          <div class="grid grid-cols-2 gap-3">
-            <label><span class="form-label">Color</span><input id="lineColor" type="color" class="color-input" /></label>
-            <label><span class="form-label">Thickness</span><input id="lineWidth" type="number" min="1" max="20" class="form-input" /></label>
-            <label><span class="form-label">Type</span><select id="lineType" class="form-input"><option value="curve">Curved</option><option value="straight">Straight</option><option value="elbow">Elbow</option></select></label>
-            <label class="flex items-end gap-2 pb-1"><input id="lineDash" type="checkbox" class="h-5 w-5 accent-[#0075de]" /> <span class="form-label">Dashed</span></label>
-          </div>
-          <button id="applyLineAll" class="tool-btn mt-3 w-full">Apply to All Lines</button>
-        </section>
+    <section id="outlinePanel" class="task-panel medium hidden no-print">
+      <h2 class="panel-title">Outline to Mind Map</h2>
+      <textarea id="outline" class="textarea-input thin-scroll min-h-40" placeholder="Main topic\nFirst point\nSecond point\nExample\nConclusion"></textarea>
+      <button id="outlineToNodes" class="tool-btn tool-btn-primary mt-3 w-full">Create From Outline</button>
+      <p class="muted-copy mt-2">First line becomes the center. Remaining lines become connected ideas.</p>
+    </section>
 
-        <section class="panel">
-          <h2 class="panel-title">Shortcuts</h2>
-          <ul class="space-y-2 muted-copy">
-            <li><b style="color:var(--notion-ink-secondary)">Ctrl/⌘ + S:</b> save locally</li>
-            <li><b style="color:var(--notion-ink-secondary)">Ctrl/⌘ + Z:</b> undo</li>
-            <li><b style="color:var(--notion-ink-secondary)">Ctrl/⌘ + D:</b> duplicate node</li>
-            <li><b style="color:var(--notion-ink-secondary)">Delete:</b> delete selected</li>
-            <li><b style="color:var(--notion-ink-secondary)">Esc:</b> cancel connection mode</li>
-          </ul>
-        </section>
-      </aside>
-    </div>
+    <section id="shortcutsPanel" class="task-panel narrow right hidden no-print">
+      <h2 class="panel-title">Shortcuts</h2>
+      <ul class="space-y-2 muted-copy">
+        <li><b style="color:var(--notion-ink-secondary)">Ctrl/⌘ + S:</b> save locally</li>
+        <li><b style="color:var(--notion-ink-secondary)">Ctrl/⌘ + Z:</b> undo</li>
+        <li><b style="color:var(--notion-ink-secondary)">Ctrl/⌘ + D:</b> duplicate node</li>
+        <li><b style="color:var(--notion-ink-secondary)">Delete:</b> delete selected</li>
+        <li><b style="color:var(--notion-ink-secondary)">Esc:</b> close panels / cancel connection</li>
+      </ul>
+    </section>
   </div>
 `
 
@@ -218,6 +230,56 @@ function status(message) {
   els.status.textContent = message
   window.clearTimeout(status.timer)
   status.timer = window.setTimeout(() => (els.status.textContent = 'Ready'), 1800)
+}
+
+function getNodeDefaults() {
+  if (state.theme === 'dark') {
+    return { ...clone(defaultNode), fill: '#2f2f2f', color: '#f1f1ef', border: '#474747' }
+  }
+  return clone(defaultNode)
+}
+
+function applyTheme() {
+  document.documentElement.dataset.theme = state.theme || 'light'
+  const btn = $('#themeToggle')
+  if (btn) {
+    btn.textContent = state.theme === 'dark' ? 'Light mode' : 'Dark mode'
+    btn.classList.toggle('is-active', state.theme === 'dark')
+  }
+}
+
+function rethemeMap(nextTheme) {
+  const toDark = nextTheme === 'dark'
+  const replace = (value, lightValue, darkValue) => {
+    const normalized = String(value || '').toLowerCase()
+    if (toDark && normalized === lightValue) return darkValue
+    if (!toDark && normalized === darkValue) return lightValue
+    return value
+  }
+
+  state.canvas.color = replace(state.canvas.color, '#f6f5f4', '#202020')
+  state.nodes = state.nodes.map((node) => ({
+    ...node,
+    fill: replace(replace(node.fill, '#ffffff', '#2f2f2f'), '#f6f5f4', '#202020'),
+    color: replace(replace(node.color, '#000000', '#f1f1ef'), '#0f172a', '#f1f1ef'),
+    border: replace(node.border, '#e6e6e6', '#474747'),
+  }))
+}
+
+function closeTaskPanels() {
+  $$('.task-panel').forEach((panel) => panel.classList.add('hidden'))
+  $$('.task-toggle').forEach((button) => button.classList.remove('is-active'))
+}
+
+function toggleTaskPanel(panelId, button) {
+  const panel = $(`#${panelId}`)
+  if (!panel) return
+  const willOpen = panel.classList.contains('hidden')
+  closeTaskPanels()
+  if (willOpen) {
+    panel.classList.remove('hidden')
+    button?.classList.add('is-active')
+  }
 }
 
 function snapshot() {
@@ -241,7 +303,7 @@ function selectedNode() {
 
 function addNode(props = {}) {
   snapshot()
-  const node = { ...clone(defaultNode), id: uid('node'), ...props }
+  const node = { ...getNodeDefaults(), id: uid('node'), ...props }
   state.nodes.push(node)
   state.selectedId = node.id
   state.selectedLinkId = null
@@ -310,6 +372,7 @@ function applyTransform() {
 }
 
 function render() {
+  applyTheme()
   els.world.style.backgroundColor = state.canvas.color
   els.world.classList.toggle('canvas-grid', state.canvas.grid)
   applyTransform()
@@ -529,6 +592,7 @@ function syncPanels() {
   $('#lineWidth').value = state.linkDefaults.width
   $('#lineType').value = state.linkDefaults.type
   $('#lineDash').checked = state.linkDefaults.dash
+  applyTheme()
 
   const node = selectedNode()
   els.noSelection.classList.toggle('hidden', Boolean(node))
@@ -614,7 +678,7 @@ function createFromOutline() {
   state.nodes = []
   state.links = []
 
-  const root = { ...clone(defaultNode), id: uid('node'), x: 1850, y: 1280, w: 210, h: 72, text: lines[0], fill: '#f6f5f4', border: '#e6e6e6', size: 19, bold: true }
+  const root = { ...getNodeDefaults(), id: uid('node'), x: 1850, y: 1280, w: 210, h: 72, text: lines[0], fill: state.theme === 'dark' ? '#202020' : '#f6f5f4', border: state.theme === 'dark' ? '#474747' : '#e6e6e6', size: 19, bold: true }
   state.nodes.push(root)
 
   const count = lines.length - 1
@@ -622,14 +686,14 @@ function createFromOutline() {
     const angle = (Math.PI * 2 * index) / Math.max(1, count)
     const distanceX = 380
     const distanceY = 240
-    const node = { ...clone(defaultNode), id: uid('node'), x: root.x + Math.cos(angle) * distanceX, y: root.y + Math.sin(angle) * distanceY, text: line }
+    const node = { ...getNodeDefaults(), id: uid('node'), x: root.x + Math.cos(angle) * distanceX, y: root.y + Math.sin(angle) * distanceY, text: line }
     const palette = [
-      ['#ffffff', '#e6e6e6'],
-      ['#ffffff', '#e6e6e6'],
-      ['#ffffff', '#e6e6e6'],
-      ['#ffffff', '#e6e6e6'],
-      ['#ffffff', '#e6e6e6'],
-      ['#ffffff', '#e6e6e6'],
+      [state.theme === 'dark' ? '#2f2f2f' : '#ffffff', state.theme === 'dark' ? '#474747' : '#e6e6e6'],
+      [state.theme === 'dark' ? '#2f2f2f' : '#ffffff', state.theme === 'dark' ? '#474747' : '#e6e6e6'],
+      [state.theme === 'dark' ? '#2f2f2f' : '#ffffff', state.theme === 'dark' ? '#474747' : '#e6e6e6'],
+      [state.theme === 'dark' ? '#2f2f2f' : '#ffffff', state.theme === 'dark' ? '#474747' : '#e6e6e6'],
+      [state.theme === 'dark' ? '#2f2f2f' : '#ffffff', state.theme === 'dark' ? '#474747' : '#e6e6e6'],
+      [state.theme === 'dark' ? '#2f2f2f' : '#ffffff', state.theme === 'dark' ? '#474747' : '#e6e6e6'],
     ][index % 6]
     node.fill = palette[0]
     node.border = palette[1]
@@ -646,6 +710,28 @@ function createFromOutline() {
 }
 
 function bindEvents() {
+  $$('.task-toggle').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation()
+      toggleTaskPanel(button.dataset.panel, button)
+    })
+  })
+
+  document.addEventListener('mousedown', (event) => {
+    if (event.target.closest?.('.task-panel') || event.target.closest?.('.task-toggle')) return
+    closeTaskPanels()
+  })
+
+  $('#themeToggle').addEventListener('click', () => {
+    snapshot()
+    const nextTheme = state.theme === 'dark' ? 'light' : 'dark'
+    rethemeMap(nextTheme)
+    state.theme = nextTheme
+    render()
+    syncPanels()
+    status(`${nextTheme === 'dark' ? 'Dark' : 'Light'} mode`)
+  })
+
   $('#addNode').addEventListener('click', () => {
     const rect = els.viewport.getBoundingClientRect()
     const center = {
@@ -805,6 +891,7 @@ function bindEvents() {
       state.connectMode = false
       state.connectFrom = null
       $('#connectMode').classList.remove('is-active')
+      closeTaskPanels()
       status('Cancelled')
     }
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'd') {
@@ -824,11 +911,11 @@ function zoomBy(multiplier) {
 }
 
 function seedDemo() {
-  const main = { ...clone(defaultNode), id: uid('node'), x: 1850, y: 1280, w: 210, h: 72, text: 'Explain Your Topic', fill: '#f6f5f4', border: '#e6e6e6', size: 19, bold: true }
-  const n1 = { ...clone(defaultNode), id: uid('node'), x: 2190, y: 1110, text: 'Definition', fill: '#ffffff', border: '#e6e6e6' }
-  const n2 = { ...clone(defaultNode), id: uid('node'), x: 2195, y: 1430, text: 'Examples', fill: '#ffffff', border: '#e6e6e6' }
-  const n3 = { ...clone(defaultNode), id: uid('node'), x: 1530, y: 1110, text: 'Why it matters', fill: '#ffffff', border: '#e6e6e6' }
-  const n4 = { ...clone(defaultNode), id: uid('node'), x: 1535, y: 1430, text: 'Conclusion', fill: '#ffffff', border: '#e6e6e6' }
+  const main = { ...getNodeDefaults(), id: uid('node'), x: 1850, y: 1280, w: 210, h: 72, text: 'Explain Your Topic', fill: state.theme === 'dark' ? '#202020' : '#f6f5f4', border: state.theme === 'dark' ? '#474747' : '#e6e6e6', size: 19, bold: true }
+  const n1 = { ...getNodeDefaults(), id: uid('node'), x: 2190, y: 1110, text: 'Definition' }
+  const n2 = { ...getNodeDefaults(), id: uid('node'), x: 2195, y: 1430, text: 'Examples' }
+  const n3 = { ...getNodeDefaults(), id: uid('node'), x: 1530, y: 1110, text: 'Why it matters' }
+  const n4 = { ...getNodeDefaults(), id: uid('node'), x: 1535, y: 1430, text: 'Conclusion' }
   state.nodes = [main, n1, n2, n3, n4]
   state.links = [n1, n2, n3, n4].map((node) => ({ id: uid('link'), from: main.id, to: node.id, ...clone(state.linkDefaults) }))
   state.selectedId = main.id
