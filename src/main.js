@@ -8,7 +8,7 @@ const defaultNode = {
   x: 520,
   y: 360,
   w: 190,
-  h: 104,
+  h: 72,
   text: 'New idea',
   fill: '#ffffff',
   color: '#000000',
@@ -315,14 +315,16 @@ function ensureNodeTextBoxes(node) {
   }
   node.boxes = node.boxes.slice(0, 3)
   node.text = node.boxes[0]?.text || node.text || 'Idea'
+  const contentCount = node.boxes[2]?.text ? 3 : node.boxes[1]?.text ? 2 : 1
+  node.activeBoxes = Math.max(1, Math.min(3, node.activeBoxes || contentCount))
   return node.boxes
 }
 
 function getNodeDefaults() {
   if (state.theme === 'dark') {
-    return { ...clone(defaultNode), fill: '#2f2f2f', color: '#f1f1ef', border: '#474747', boxes: defaultTextBoxes(defaultNode.text) }
+    return { ...clone(defaultNode), fill: '#2f2f2f', color: '#f1f1ef', border: '#474747', boxes: defaultTextBoxes(defaultNode.text), activeBoxes: 1 }
   }
-  return { ...clone(defaultNode), boxes: defaultTextBoxes(defaultNode.text) }
+  return { ...clone(defaultNode), boxes: defaultTextBoxes(defaultNode.text), activeBoxes: 1 }
 }
 
 function applyTheme() {
@@ -544,7 +546,8 @@ function drawNodes() {
     const inner = document.createElement('div')
     inner.className = 'node-inner'
 
-    node.boxes.forEach((box, index) => {
+    const activeCount = Math.max(1, Math.min(3, node.activeBoxes || 1))
+    node.boxes.slice(0, activeCount).forEach((box, index) => {
       const boxEl = document.createElement('div')
       boxEl.className = `node-text-box node-text-box-${index + 1}`
       boxEl.dataset.boxIndex = index
@@ -571,6 +574,27 @@ function drawNodes() {
       })
       inner.appendChild(boxEl)
     })
+
+    if (node.id === state.selectedId && activeCount < 3) {
+      const addBox = document.createElement('button')
+      addBox.type = 'button'
+      addBox.className = 'node-add-box'
+      addBox.textContent = activeCount === 1 ? '+ Detail' : '+ Note'
+      addBox.addEventListener('mousedown', (event) => event.stopPropagation())
+      addBox.addEventListener('click', (event) => {
+        event.stopPropagation()
+        snapshot()
+        node.activeBoxes = activeCount + 1
+        render()
+        syncPanels()
+        window.setTimeout(() => {
+          const card = document.querySelector(`.node-card[data-id="${node.id}"]`)
+          const target = card?.querySelector(`[data-box-index="${activeCount}"]`)
+          if (card && target) startInlineEdit(card, target, node, activeCount)
+        }, 0)
+      })
+      inner.appendChild(addBox)
+    }
 
     div.appendChild(inner)
     div.addEventListener('mousedown', startNodeDrag)
@@ -689,7 +713,7 @@ function startInlineEdit(card, inner, node, boxIndex = 0) {
 }
 
 function startNodeDrag(event) {
-  if (event.target.isContentEditable) return
+  if (event.target.isContentEditable || event.target.closest?.('.node-add-box')) return
   const rect = event.currentTarget.getBoundingClientRect()
   if (event.clientX > rect.right - 18 && event.clientY > rect.bottom - 18) return
   event.stopPropagation()
@@ -910,7 +934,7 @@ function createFromOutline() {
   state.nodes = []
   state.links = []
 
-  const root = { ...getNodeDefaults(), id: uid('node'), x: 1850, y: 1280, w: 230, h: 112, text: lines[0], fill: state.theme === 'dark' ? '#202020' : '#f6f5f4', border: state.theme === 'dark' ? '#474747' : '#e6e6e6', size: 19, bold: true }
+  const root = { ...getNodeDefaults(), id: uid('node'), x: 1850, y: 1280, w: 230, h: 88, text: lines[0], fill: state.theme === 'dark' ? '#202020' : '#f6f5f4', border: state.theme === 'dark' ? '#474747' : '#e6e6e6', size: 19, bold: true }
   state.nodes.push(root)
 
   const count = lines.length - 1
@@ -1234,7 +1258,7 @@ function zoomBy(multiplier) {
 }
 
 function seedDemo() {
-  const main = { ...getNodeDefaults(), id: uid('node'), x: 1850, y: 1280, w: 230, h: 112, text: 'Explain Your Topic', fill: state.theme === 'dark' ? '#202020' : '#f6f5f4', border: state.theme === 'dark' ? '#474747' : '#e6e6e6', size: 19, bold: true }
+  const main = { ...getNodeDefaults(), id: uid('node'), x: 1850, y: 1280, w: 230, h: 88, text: 'Explain Your Topic', fill: state.theme === 'dark' ? '#202020' : '#f6f5f4', border: state.theme === 'dark' ? '#474747' : '#e6e6e6', size: 19, bold: true }
   const n1 = { ...getNodeDefaults(), id: uid('node'), x: 2190, y: 1110, text: 'Definition' }
   const n2 = { ...getNodeDefaults(), id: uid('node'), x: 2195, y: 1430, text: 'Examples' }
   const n3 = { ...getNodeDefaults(), id: uid('node'), x: 1530, y: 1110, text: 'Why it matters' }

@@ -349,3 +349,28 @@
   .node-text-box-2 { opacity: .92; }
   .node-text-box-3 { opacity: .78; }
 }
+
+@layer components {
+  .node-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .node-add-box {
+    margin-top: 2px;
+    width: fit-content;
+    border: 1px dashed var(--notion-hairline);
+    border-radius: 9999px;
+    background: transparent;
+    padding: 2px 8px;
+    color: var(--notion-ink-faint);
+    font-size: 11px;
+    line-height: 1.4;
+    cursor: pointer;
+  }
+  .node-add-box:hover {
+    border-color: var(--notion-primary);
+    color: var(--notion-primary);
+    background: color-mix(in srgb, var(--notion-primary) 8%, transparent);
+  }
+}
